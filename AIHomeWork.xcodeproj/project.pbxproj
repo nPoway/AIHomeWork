@@ -7,40 +7,38 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		17830B782D4D1E1200EAB2F6 /* MVVM+C.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "MVVM+C.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		17830B782D4D1E1200EAB2F6 /* AIHomeWork.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AIHomeWork.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		17830B8A2D4D1E1300EAB2F6 /* Exceptions for "MVVM+C" folder in "MVVM+C" target */ = {
+		17830B8A2D4D1E1300EAB2F6 /* Exceptions for "AIHomeWork" folder in "AIHomeWork" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				"/Localized: LaunchScreen.storyboard",
-				"/Localized: Main.storyboard",
+				"/Localized: App/LaunchScreen.storyboard",
 				Info.plist,
 			);
-			target = 17830B772D4D1E1200EAB2F6 /* MVVM+C */;
+			target = 17830B772D4D1E1200EAB2F6 /* AIHomeWork */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
-		17830B8E2D4D1E1300EAB2F6 /* Exceptions for "MVVM+C" folder in "Copy Bundle Resources" phase from "MVVM+C" target */ = {
+		17830B8E2D4D1E1300EAB2F6 /* Exceptions for "AIHomeWork" folder in "Copy Bundle Resources" phase from "AIHomeWork" target */ = {
 			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
 			buildPhase = 17830B762D4D1E1200EAB2F6 /* Resources */;
 			membershipExceptions = (
-				Base.lproj/LaunchScreen.storyboard,
-				Base.lproj/Main.storyboard,
+				App/Base.lproj/LaunchScreen.storyboard,
 			);
 		};
 /* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		17830B7A2D4D1E1200EAB2F6 /* MVVM+C */ = {
+		17830B7A2D4D1E1200EAB2F6 /* AIHomeWork */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				17830B8A2D4D1E1300EAB2F6 /* Exceptions for "MVVM+C" folder in "MVVM+C" target */,
-				17830B8E2D4D1E1300EAB2F6 /* Exceptions for "MVVM+C" folder in "Copy Bundle Resources" phase from "MVVM+C" target */,
+				17830B8A2D4D1E1300EAB2F6 /* Exceptions for "AIHomeWork" folder in "AIHomeWork" target */,
+				17830B8E2D4D1E1300EAB2F6 /* Exceptions for "AIHomeWork" folder in "Copy Bundle Resources" phase from "AIHomeWork" target */,
 			);
-			path = "MVVM+C";
+			path = AIHomeWork;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -59,7 +57,7 @@
 		17830B6F2D4D1E1200EAB2F6 = {
 			isa = PBXGroup;
 			children = (
-				17830B7A2D4D1E1200EAB2F6 /* MVVM+C */,
+				17830B7A2D4D1E1200EAB2F6 /* AIHomeWork */,
 				17830B792D4D1E1200EAB2F6 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -67,7 +65,7 @@
 		17830B792D4D1E1200EAB2F6 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				17830B782D4D1E1200EAB2F6 /* MVVM+C.app */,
+				17830B782D4D1E1200EAB2F6 /* AIHomeWork.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -75,9 +73,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		17830B772D4D1E1200EAB2F6 /* MVVM+C */ = {
+		17830B772D4D1E1200EAB2F6 /* AIHomeWork */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 17830B8B2D4D1E1300EAB2F6 /* Build configuration list for PBXNativeTarget "MVVM+C" */;
+			buildConfigurationList = 17830B8B2D4D1E1300EAB2F6 /* Build configuration list for PBXNativeTarget "AIHomeWork" */;
 			buildPhases = (
 				17830B742D4D1E1200EAB2F6 /* Sources */,
 				17830B752D4D1E1200EAB2F6 /* Frameworks */,
@@ -88,13 +86,13 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				17830B7A2D4D1E1200EAB2F6 /* MVVM+C */,
+				17830B7A2D4D1E1200EAB2F6 /* AIHomeWork */,
 			);
-			name = "MVVM+C";
+			name = AIHomeWork;
 			packageProductDependencies = (
 			);
 			productName = "MVVM+C";
-			productReference = 17830B782D4D1E1200EAB2F6 /* MVVM+C.app */;
+			productReference = 17830B782D4D1E1200EAB2F6 /* AIHomeWork.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -112,7 +110,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 17830B732D4D1E1200EAB2F6 /* Build configuration list for PBXProject "MVVM+C" */;
+			buildConfigurationList = 17830B732D4D1E1200EAB2F6 /* Build configuration list for PBXProject "AIHomeWork" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -126,7 +124,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				17830B772D4D1E1200EAB2F6 /* MVVM+C */,
+				17830B772D4D1E1200EAB2F6 /* AIHomeWork */,
 			);
 		};
 /* End PBXProject section */
@@ -164,7 +162,6 @@
 				INFOPLIST_FILE = "MVVM+C/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -192,7 +189,6 @@
 				INFOPLIST_FILE = "MVVM+C/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -330,7 +326,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		17830B732D4D1E1200EAB2F6 /* Build configuration list for PBXProject "MVVM+C" */ = {
+		17830B732D4D1E1200EAB2F6 /* Build configuration list for PBXProject "AIHomeWork" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				17830B8F2D4D1E1300EAB2F6 /* Debug */,
@@ -339,7 +335,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		17830B8B2D4D1E1300EAB2F6 /* Build configuration list for PBXNativeTarget "MVVM+C" */ = {
+		17830B8B2D4D1E1300EAB2F6 /* Build configuration list for PBXNativeTarget "AIHomeWork" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				17830B8C2D4D1E1300EAB2F6 /* Debug */,
