@@ -1,10 +1,6 @@
 import UIKit
-//protocol ScanCoordinatorDelegate: AnyObject {
-//    func didSelectMode(_ mode: ScanType)
-//}
 
-class ScanCoordinator: Coordinator {
-    
+final class ScanCoordinator: Coordinator {
     
     var navigationController: UINavigationController
     var childCoordinators: [Coordinator] = []
@@ -15,15 +11,24 @@ class ScanCoordinator: Coordinator {
     
     func start() {
         let scanVC = ScanViewController(coordinator: self)
-        navigationController.pushViewController(scanVC, animated: true)
+        let typeVC = TypeViewController()
+        
+        let containerVC = ScanTypeContainerViewController(scanVC: scanVC, typeVC: typeVC)
+        
+        navigationController.pushViewController(containerVC, animated: true)
     }
     
     func finish() {
         navigationController.popViewController(animated: true)
     }
     
-    func showTypeView() {
-//        let typeVC = TypeViewController(viewModel: TypeViewModel())
-//        navigationController.pushViewController(typeVC, animated: true)
-    }
+    func showScanningResult(with image: UIImage) {
+            let scanningResultVC = ScanningResultViewController(coordinator: self, image: image)
+            scanningResultVC.modalPresentationStyle = .fullScreen
+            navigationController.present(scanningResultVC, animated: true)
+        }
+        
+        func dismissScanningResult() {
+            navigationController.dismiss(animated: true)
+        }
 }

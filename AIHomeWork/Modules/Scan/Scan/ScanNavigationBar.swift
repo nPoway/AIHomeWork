@@ -57,4 +57,8 @@ final class ScanNavigationBar: BaseBlurredView {
             bottomLine.heightAnchor.constraint(equalToConstant: 1)
         ])
     }
+    
+    func changeNavLabelText(_ text: String) {
+        titleLabel.text = text
+    }
 }

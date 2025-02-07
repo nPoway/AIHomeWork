@@ -8,18 +8,17 @@ final class SegmentButtonsView: UIStackView {
     
     weak var delegate: SegmentButtonsViewDelegate?
     
-    private let scanButton = UIButton(type: .system)
-    private let typeButton = UIButton(type: .system)
+    private let scanButton = UIButton()
+    private let typeButton = UIButton()
     
-    // Icons
-    private let scanIcon = UIImage(named: "scanIcon")?.withRenderingMode(.alwaysOriginal)
-    private let typeIcon = UIImage(named: "typeIcon")?.withRenderingMode(.alwaysOriginal)
+    private let scanIcon = UIImage.scanIcon
+    private let typeIcon = UIImage.typeIcon
     
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupStack()
         setupButtons()
-        updateSelectedState(isScan: true) // Default selection
+        updateSelectedState(isScan: true)
     }
     
     required init(coder: NSCoder) {
@@ -28,9 +27,12 @@ final class SegmentButtonsView: UIStackView {
     
     private func setupStack() {
         axis = .horizontal
+        backgroundColor = .darkGray.withAlphaComponent(0.2)
+        layer.cornerRadius = 16
+        layer.masksToBounds = true
         alignment = .fill
         distribution = .fillEqually
-        spacing = 8
+        spacing = 0
     }
     
     private func setupButtons() {
@@ -42,27 +44,29 @@ final class SegmentButtonsView: UIStackView {
     }
     
     private func configureButton(_ button: UIButton, title: String, icon: UIImage?) {
-        // Title
         button.setTitle(title, for: .normal)
-        // Icon on the left
-        if let image = icon {
+
+        if let image = icon?.resizeImage(to: CGSize(width: 24, height: 24)) {
             button.setImage(image, for: .normal)
         }
-        // Adjust insets so the icon is left and text is right
+        
         button.semanticContentAttribute = .forceLeftToRight
+
+        let spacing: CGFloat = 4
+        button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -spacing, bottom: 0, right: spacing)
+        button.titleEdgeInsets = UIEdgeInsets(top: 0, left: spacing, bottom: 0, right: -spacing)
         
         // Appearance
         button.layer.cornerRadius = 16
         button.clipsToBounds = true
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+        button.titleLabel?.font = UIFont.plusJakartaSans(.semiBold, size: 18)
         button.tintColor = .white
-        
-        // Content insets (for top/bottom/left/right spacing)
+       
         button.contentEdgeInsets = UIEdgeInsets(top: 8, left: 16, bottom: 8, right: 16)
         
-        // Add tap
         button.addTarget(self, action: #selector(didTapButton(_:)), for: .touchUpInside)
     }
+
     
     @objc private func didTapButton(_ sender: UIButton) {
         let isScanSelected = (sender == scanButton)
@@ -72,17 +76,16 @@ final class SegmentButtonsView: UIStackView {
     }
     
     private func updateSelectedState(isScan: Bool) {
-        // Set background colors for selected / non‐selected
         if isScan {
             scanButton.backgroundColor = .systemBlue
-            typeButton.backgroundColor = UIColor.black.withAlphaComponent(0.6)
-        } else {
+            typeButton.backgroundColor = .clear
+        }
+        else {
             typeButton.backgroundColor = .systemBlue
-            scanButton.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+            scanButton.backgroundColor = .clear
         }
     }
-    
-    // Optional: Expose a method to programmatically select a segment
+   
     func selectSegmentAtIndex(_ index: Int) {
         updateSelectedState(isScan: (index == 0))
     }

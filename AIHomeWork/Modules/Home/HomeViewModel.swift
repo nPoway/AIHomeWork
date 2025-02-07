@@ -1,18 +1,14 @@
+import UIKit
+
 final class HomeViewModel {
     
-    // Observables or callbacks to update the view
-    private(set) var subjects: [SubjectItem] = []
+    private var subjects: [Subject] = []
     
-    init() {
-        fetchSubjects()
+    var sections: [Section] {
+        return Section.allCases
     }
-    
-    private func fetchSubjects() {
-        // For a real app, you could fetch from a service or Realm
-        subjects = [
-            SubjectItem(title: "Math", description: "Help with algebra, geometry, calculus"),
-            SubjectItem(title: "Programming", description: "Programming and computer science help"),
-            // ... and so on
-        ]
+   
+    func getItems(for section: Section) -> [Subject] {
+        return Subject.allCases.filter { $0.section == section }
     }
 }

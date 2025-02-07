@@ -1,15 +1,19 @@
 import AVFoundation
 import UIKit
+import Photos
+
 
 class ScanViewModel: NSObject {
     
     private let captureSession = AVCaptureSession()
     private var capturePhotoOutput: AVCapturePhotoOutput!
     private let cameraService = CameraService()
+
     
     var onPhotoCaptured: ((UIImage) -> Void)?
     var onCameraPermissionDenied: (() -> Void)?
     var onCameraReady: (() -> Void)?
+    var onImageSelected: ((UIImage) -> Void)?
     
     override init() {
         super.init()
@@ -30,7 +34,6 @@ class ScanViewModel: NSObject {
         }
     }
     
-    /// Запрашиваем доступ к камере
     private func requestCameraAccess() {
         AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
             DispatchQueue.main.async {
@@ -47,9 +50,9 @@ class ScanViewModel: NSObject {
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
             
-            self.captureSession.beginConfiguration() // Start session setup
+            self.captureSession.beginConfiguration()
             
-            self.captureSession.sessionPreset = .high // Faster setup than .photo
+            self.captureSession.sessionPreset = .high
             
             guard let backCamera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
                 print("Error: No back camera found")
@@ -67,8 +70,8 @@ class ScanViewModel: NSObject {
                     self.captureSession.addOutput(self.capturePhotoOutput)
                 }
                 
-                self.captureSession.commitConfiguration() // Commit changes before starting session
-                self.captureSession.startRunning() // Start session
+                self.captureSession.commitConfiguration()
+                self.captureSession.startRunning()
                 
                 DispatchQueue.main.async {
                     self.onCameraReady?()
@@ -101,6 +104,27 @@ class ScanViewModel: NSObject {
             button.setImage(UIImage(systemName: icon), for: .normal)
         }
     }
+    
+    func imageSelected(_ image: UIImage) {
+            onImageSelected?(image)
+        }
+    
+    func checkPhotoLibraryPermission(completion: @escaping (Bool) -> Void) {
+        let status = PHPhotoLibrary.authorizationStatus()
+        switch status {
+        case .authorized, .limited:
+            completion(true)
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization { newStatus in
+                DispatchQueue.main.async {
+                    completion(newStatus == .authorized || newStatus == .limited)
+                }
+            }
+        default:
+            completion(false)
+        }
+    }
+
 }
 
 extension ScanViewModel: AVCapturePhotoCaptureDelegate {

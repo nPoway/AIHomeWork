@@ -1,8 +1,5 @@
-//
-//  Extension+UICollectionView.swift
-//  AIHomeWork
-//
-//  Created by Никита on 05.02.2025.
-//
+import UIKit
 
-import Foundation
+extension UICollectionView {
+    static let elementKindSectionHeaderAIChat = "UICollectionElementKindSectionHeader_AICHAT"
+}

@@ -1,9 +1,12 @@
+import UIKit
+
 final class SettingsCell: UITableViewCell {
     static let identifier = "SettingsCell"
     
+    private let containerView = UIView()
     private let iconView = UIImageView()
     private let titleLabel = UILabel()
-    private let arrowView = UIImageView(image: UIImage(systemName: "chevron.right"))
+    private let arrowView = UIImageView(image: UIImage.rightArrow)
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -15,28 +18,44 @@ final class SettingsCell: UITableViewCell {
     }
     
     private func setupUI() {
+        selectionStyle = .none
+
         backgroundColor = .clear
         
+        containerView.layer.cornerRadius = 20
+        containerView.layer.masksToBounds = true
+        containerView.backgroundColor = UIColor(white: 0.1, alpha: 1)
+        
         titleLabel.textColor = .white
-        titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        
-        iconView.tintColor = .white
-        
+        titleLabel.font = UIFont.plusJakartaSans(.medium, size: 16)
         arrowView.tintColor = .white
         
-        let stackView = UIStackView(arrangedSubviews: [iconView, titleLabel, UIView(), arrowView])
-        stackView.axis = .horizontal
-        stackView.spacing = 12
-        stackView.alignment = .center
-        stackView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(containerView)
+        [iconView, titleLabel, arrowView].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            containerView.addSubview($0)
+        }
         
-        contentView.addSubview(stackView)
+        containerView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            stackView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            stackView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
-            stackView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10)
+            containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
+            containerView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -4),
+            containerView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            containerView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            
+            iconView.widthAnchor.constraint(equalToConstant: 32),
+            iconView.heightAnchor.constraint(equalToConstant: 32),
+            iconView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            iconView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 15),
+            
+            titleLabel.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            titleLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10),
+            
+            arrowView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            arrowView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -10),
+            arrowView.widthAnchor.constraint(equalToConstant: 32),
+            arrowView.heightAnchor.constraint(equalToConstant: 32)
         ])
     }
     
@@ -44,4 +63,9 @@ final class SettingsCell: UITableViewCell {
         titleLabel.text = title
         iconView.image = icon
     }
+    
+    override func setSelected(_ selected: Bool, animated: Bool) {
+        super.setSelected(false, animated: false)
+    }
+
 }

@@ -1,8 +1,25 @@
-//
-//  HomeCoordinator.swift
-//  AIHomeWork
-//
-//  Created by Никита on 04.02.2025.
-//
+import UIKit
 
-import Foundation
+class HomeCoordinator: Coordinator {
+    var navigationController: UINavigationController
+    
+    init(navigationController: UINavigationController) {
+        self.navigationController = navigationController
+    }
+    
+    func start() {
+        navigationController.pushViewController(makeHomeViewController(), animated: false)
+    }
+    
+    func finish() {}
+    
+    func makeHomeViewController() -> UIViewController {
+        let viewController = HomeViewController(coordinator: self)
+        return viewController
+    }
+    
+    func openSettings() {
+        let settingsCoordinator = SettingsCoordinator(navigationController: navigationController)
+        settingsCoordinator.start()
+    }
+}

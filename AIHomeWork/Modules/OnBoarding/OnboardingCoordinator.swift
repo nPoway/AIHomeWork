@@ -1,8 +1,17 @@
-//
-//  OnboardingCoordinator.swift
-//  AIHomeWork
-//
-//  Created by Никита on 04.02.2025.
-//
+import UIKit
 
-import Foundation
+class OnboardingCoordinator: Coordinator {
+    var navigationController: UINavigationController
+    
+    var onFinish: (() -> Void)?
+    
+    init(navigationController: UINavigationController) {
+        self.navigationController = navigationController
+    }
+    
+    func start() {}
+    
+    func finish() {
+        onFinish?()
+    }
+}

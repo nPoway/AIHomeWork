@@ -2,23 +2,14 @@ import UIKit
 
 final class ScanTypeContainerViewController: UIViewController {
     
-    // MARK: - UI
-    
-    private let segmentedControl: UISegmentedControl = {
-        let control = UISegmentedControl(items: ["Scan", "Type"])
-        control.selectedSegmentIndex = 0
-        control.addTarget(self, action: #selector(segmentChanged), for: .valueChanged)
-        return control
-    }()
-    
     private let containerView = UIView()
+    
+    private let customNavBar = ScanNavigationBar()
 
-    // MARK: - Child View Controllers
+    private let segmentedControl = SegmentButtonsView()
     
     private let scanVC: ScanViewController
     private let typeVC: TypeViewController
-    
-    // MARK: - Lifecycle
     
     init(scanVC: ScanViewController, typeVC: TypeViewController) {
         self.scanVC = scanVC
@@ -33,40 +24,47 @@ final class ScanTypeContainerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        navigationController?.isNavigationBarHidden = true
+        
         view.backgroundColor = .black
-        setupLayout()
-        addChildVC(scanVC) // По умолчанию показываем Scan
-    }
-    
-    // MARK: - Segment Action
-    
-    @objc private func segmentChanged(_ sender: UISegmentedControl) {
-        switch sender.selectedSegmentIndex {
-        case 0:
-            removeChildVC(typeVC)
-            addChildVC(scanVC)
-        case 1:
-            removeChildVC(scanVC)
-            addChildVC(typeVC)
-        default:
-            break
-        }
-    }
-    
-    // MARK: - Helpers
-    
-    private func setupLayout() {
-        navigationItem.titleView = segmentedControl
         
-        containerView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(containerView)
-        
+        containerView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            containerView.topAnchor.constraint(equalTo: view.topAnchor),
             containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+        
+        view.addSubview(customNavBar)
+        customNavBar.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            customNavBar.topAnchor.constraint(equalTo: view.topAnchor),
+            customNavBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            customNavBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            customNavBar.heightAnchor.constraint(equalToConstant: 110)
+        ])
+        
+        customNavBar.backgroundColor = UIColor.black
+        customNavBar.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
+       
+        addChildVC(scanVC)
+        segmentedControl.delegate = self
+        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(segmentedControl)
+        NSLayoutConstraint.activate([
+            segmentedControl.topAnchor.constraint(equalTo: customNavBar.bottomAnchor, constant: 15),
+            segmentedControl.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            segmentedControl.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.95),
+            segmentedControl.heightAnchor.constraint(equalToConstant: 45)
+               ])
+        
+    }
+    
+    @objc private func backTapped() {
+        navigationController?.popViewController(animated: true)
     }
     
     private func addChildVC(_ child: UIViewController) {
@@ -78,8 +76,26 @@ final class ScanTypeContainerViewController: UIViewController {
     }
     
     private func removeChildVC(_ child: UIViewController) {
+        guard child.parent != nil else { return }
         child.willMove(toParent: nil)
         child.view.removeFromSuperview()
         child.removeFromParent()
+    }
+}
+
+extension ScanTypeContainerViewController: SegmentButtonsViewDelegate {
+    func didSelectSegment(_ index: Int) {
+        switch index {
+        case 0:
+            removeChildVC(typeVC)
+            addChildVC(scanVC)
+            customNavBar.changeNavLabelText("Scan")
+        case 1:
+            removeChildVC(scanVC)
+            addChildVC(typeVC)
+            customNavBar.changeNavLabelText("Type")
+        default:
+            break
+        }
     }
 }

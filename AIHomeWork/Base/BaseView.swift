@@ -16,9 +16,7 @@ class BaseView: UIView {
         setupConstraints()
         setupTargets()
     }
-}
-
-extension BaseView {
+    
     func setupUI() {}
     func setupConstraints() {}
     func setupTargets() {}

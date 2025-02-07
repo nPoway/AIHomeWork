@@ -15,6 +15,25 @@ class ScanView: UIView {
         return label
     }()
     
+    let cameraBackground: UIImageView = {
+        let imageView = UIImageView(image: UIImage(named: "cameraBackground"))
+        imageView.contentMode = .scaleAspectFill
+        imageView.alpha = 0.6
+        imageView.clipsToBounds = true
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    let darkOverlay: UIView = {
+        let view = UIView()
+        view.backgroundColor = UIColor.black.withAlphaComponent(0.8)
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+
+
+    
     let navigationBar = ScanNavigationBar()
     
     private let blurredBackground: BaseBlurredView = {
@@ -61,8 +80,21 @@ class ScanView: UIView {
     
     private func setupUI() {
         
-        setupNavigationBar()
-        
+        addSubview(cameraBackground)
+        addSubview(darkOverlay)
+
+        NSLayoutConstraint.activate([
+            cameraBackground.topAnchor.constraint(equalTo: topAnchor),
+            cameraBackground.leadingAnchor.constraint(equalTo: leadingAnchor),
+            cameraBackground.trailingAnchor.constraint(equalTo: trailingAnchor),
+            cameraBackground.bottomAnchor.constraint(equalTo: bottomAnchor),
+            
+            darkOverlay.topAnchor.constraint(equalTo: topAnchor),
+            darkOverlay.leadingAnchor.constraint(equalTo: leadingAnchor),
+            darkOverlay.trailingAnchor.constraint(equalTo: trailingAnchor),
+            darkOverlay.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
+
         addSubview(scanLabel)
         
         addSubview(blurredBackground)
