@@ -31,4 +31,10 @@ final class ScanCoordinator: Coordinator {
         func dismissScanningResult() {
             navigationController.dismiss(animated: true)
         }
+    func showViewController(_ viewController: UIViewController) {
+        navigationController.pushViewController(viewController, animated: true)
+    }
+    func pop() {
+        navigationController.popViewController(animated: true)
+    }
 }

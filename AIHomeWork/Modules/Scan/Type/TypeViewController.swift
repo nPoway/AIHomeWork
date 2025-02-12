@@ -136,8 +136,11 @@ final class TypeViewController: UIViewController, UITextViewDelegate {
         viewModel.validateInput()
     }
     
-    func textViewShouldReturn(_ textView: UITextView) -> Bool {
-        textView.resignFirstResponder()
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        if text == "\n" {
+            textView.resignFirstResponder()
+            return false
+        }
         return true
     }
     

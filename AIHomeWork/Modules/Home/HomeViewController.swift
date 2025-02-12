@@ -92,12 +92,17 @@ extension HomeViewController: UICollectionViewDelegate {
 
 extension HomeViewController {
     private func navigateToDetail(for item: Subject) {
-        
+        if item == .translate {
+            coordinator.openTranslate()
+        }
+        else {
+            coordinator.openChat(with: item)
+        }
     }
     
     @objc
     private func chatButtonTapped() {
-        
+        coordinator.openChat()
     }
     
     @objc

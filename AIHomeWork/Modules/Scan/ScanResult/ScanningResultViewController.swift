@@ -4,23 +4,9 @@ final class ScanningResultViewController: UIViewController {
     
     private let viewModel: ScanningResultViewModel
     private let coordinator: ScanCoordinator
-
-
-    private let titleLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Scanning Result"
-        label.textColor = .white
-        label.font = UIFont.plusJakartaSans(.semiBold, size: 24)
-        label.textAlignment = .center
-        return label
-    }()
     
-    private let bottomLine: UIView = {
-        let view = UIView()
-        view.backgroundColor = UIColor(white: 1.0, alpha: 0.1)
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
+    
+    private let navigationBar = ScanningResultNavView()
     
     private let subtitleLabel: UILabel = {
         let label = UILabel()
@@ -31,7 +17,7 @@ final class ScanningResultViewController: UIViewController {
         label.numberOfLines = 0
         return label
     }()
-   
+    
     private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
@@ -41,12 +27,6 @@ final class ScanningResultViewController: UIViewController {
         imageView.layer.borderWidth = 0.5
         imageView.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
         return imageView
-    }()
-    
-    private let cropView: CropView = {
-        let cropView = CropView()
-        cropView.isHidden = true
-        return cropView
     }()
     
     private let cropButton: UIButton = {
@@ -67,7 +47,7 @@ final class ScanningResultViewController: UIViewController {
         button.configuration = config
         return button
     }()
-
+    
     
     private let retakeButton: UIButton = {
         let button = UIButton(type: .system)
@@ -90,6 +70,37 @@ final class ScanningResultViewController: UIViewController {
         return button
     }()
     
+    private let activityIndicator: UIActivityIndicatorView = {
+        let indicator = UIActivityIndicatorView(style: .medium)
+        indicator.hidesWhenStopped = true
+        indicator.color = .white
+        return indicator
+    }()
+    
+    private let recognizedTextView: UITextView = {
+        let textView = UITextView()
+        textView.backgroundColor = UIColor.darkGray.withAlphaComponent(0.2)
+        textView.layer.cornerRadius = 12
+        textView.layer.masksToBounds = true
+        textView.layer.borderWidth = 0.5
+        textView.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
+        textView.font = UIFont.plusJakartaSans(.regular, size: 15)
+        textView.textColor = .white
+        textView.textContainerInset = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
+        textView.isHidden = true
+        textView.returnKeyType = .done
+        return textView
+    }()
+    
+    private let editIcon: UIImageView = {
+        let imageView = UIImageView(image: UIImage.editIcon)
+        imageView.contentMode = .scaleAspectFit
+        imageView.isHidden = true
+        return imageView
+    }()
+   
+    private var recognizedText: String?
+    
     init(coordinator: ScanCoordinator, image: UIImage) {
         self.coordinator = coordinator
         self.viewModel = ScanningResultViewModel(image: image)
@@ -100,56 +111,53 @@ final class ScanningResultViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func loadView() {
-        super.loadView()
-        view = BlurredGradientView()
-    }
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        if !cropView.isHidden {
-            cropView.cropRect = cropView.bounds.insetBy(dx: 10, dy: 10)
-        }
-    }
-
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         setupActions()
     }
     
+    private func setupNavigationBar() {
+        navigationBar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(navigationBar)
+        
+        NSLayoutConstraint.activate([
+            navigationBar.topAnchor.constraint(equalTo: view.topAnchor),
+            navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            navigationBar.heightAnchor.constraint(equalToConstant: 110)
+        ])
+        
+        navigationBar.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
+    }
+    
+    
+    
     private func setupUI() {
         view.backgroundColor = .black
         
-        view.addSubview(titleLabel)
-        view.addSubview(bottomLine)
         view.addSubview(subtitleLabel)
         view.addSubview(imageView)
-        view.addSubview(cropView)
         view.addSubview(cropButton)
         view.addSubview(retakeButton)
         view.addSubview(continueButton)
+        view.addSubview(recognizedTextView)
+        view.addSubview(editIcon)
         
         imageView.image = viewModel.capturedImage
         
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
+        setupNavigationBar()
+       
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        cropView.translatesAutoresizingMaskIntoConstraints = false
         cropButton.translatesAutoresizingMaskIntoConstraints = false
         retakeButton.translatesAutoresizingMaskIntoConstraints = false
         continueButton.translatesAutoresizingMaskIntoConstraints = false
+        recognizedTextView.translatesAutoresizingMaskIntoConstraints = false
+        editIcon.translatesAutoresizingMaskIntoConstraints = false
+        subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            
-            bottomLine.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 15),
-            bottomLine.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            bottomLine.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            bottomLine.heightAnchor.constraint(equalToConstant: 1),
-           
-            subtitleLabel.topAnchor.constraint(equalTo: bottomLine.bottomAnchor, constant: 20),
+            subtitleLabel.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: 20),
             subtitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 24),
             subtitleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
             
@@ -157,11 +165,6 @@ final class ScanningResultViewController: UIViewController {
             imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 35),
             imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -35),
             imageView.heightAnchor.constraint(equalToConstant: 450),
-            
-            cropView.topAnchor.constraint(equalTo: imageView.topAnchor),
-            cropView.leadingAnchor.constraint(equalTo: imageView.leadingAnchor),
-            cropView.trailingAnchor.constraint(equalTo: imageView.trailingAnchor),
-            cropView.bottomAnchor.constraint(equalTo: imageView.bottomAnchor),
             
             cropButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 20),
             cropButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -174,7 +177,23 @@ final class ScanningResultViewController: UIViewController {
             continueButton.topAnchor.constraint(equalTo: retakeButton.bottomAnchor, constant: 12),
             continueButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             continueButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            continueButton.heightAnchor.constraint(equalToConstant: 50)
+            continueButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            recognizedTextView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 20),
+            recognizedTextView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
+            recognizedTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            recognizedTextView.bottomAnchor.constraint(equalTo: retakeButton.topAnchor, constant: -20),
+            editIcon.widthAnchor.constraint(equalToConstant: 20),
+            editIcon.heightAnchor.constraint(equalToConstant: 20),
+            editIcon.trailingAnchor.constraint(equalTo: recognizedTextView.trailingAnchor, constant: -15),
+            editIcon.bottomAnchor.constraint(equalTo: recognizedTextView.bottomAnchor, constant: -15)
+        ])
+        
+        continueButton.addSubview(activityIndicator)
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            activityIndicator.centerXAnchor.constraint(equalTo: continueButton.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: continueButton.centerYAnchor),
         ])
     }
     
@@ -182,31 +201,93 @@ final class ScanningResultViewController: UIViewController {
         retakeButton.addTarget(self, action: #selector(retakeTapped), for: .touchUpInside)
         continueButton.addTarget(self, action: #selector(continueTapped), for: .touchUpInside)
         cropButton.addTarget(self, action: #selector(cropTapped), for: .touchUpInside)
+        recognizedTextView.delegate = self
     }
     
     @objc private func retakeTapped() {
         coordinator.dismissScanningResult()
     }
+    
+    @objc private func backTapped() {
+        coordinator.dismissScanningResult()
+    }
+    
     @objc private func continueTapped() {
-            let userRect = cropView.cropRect
-            
-            let croppedImage = viewModel.cropImage(
-                userRect: userRect,
-                imageViewSize: imageView.bounds.size
-            )
-        imageView.image = croppedImage
-            
-            Task {
-                do {
-                    let recognizedText = try await viewModel.recognizeText(from: croppedImage)
-                    print("Recognized text:\n\(recognizedText)")
-                } catch {
-                    print("Text recognition failed: \(error)")
-                }
-            }
+        if let recognizedText = recognizedText {
+            print(recognizedText)
         }
+        else {
+            startRecognition()
+        }
+    }
+    
+    private func startRecognition() {
+        continueButton.setTitle("", for: .normal)
+        activityIndicator.startAnimating()
+        continueButton.isUserInteractionEnabled = false
+        
+        guard let image = imageView.image else { return }
+        
+        Task {
+            do {
+                let recognizedString = try await viewModel.recognizeText(from: image)
+                recognizedText = recognizedString
+                displayRecognizedText(recognizedString)
+            } catch {
+                print("Text recognition failed: \(error)")
+            }
+            
+            activityIndicator.stopAnimating()
+            continueButton.setTitle("Continue", for: .normal)
+            continueButton.isUserInteractionEnabled = true
+        }
+    }
+    
+    private func displayRecognizedText(_ text: String) {
+        imageView.isHidden = true
+        cropButton.isHidden = true
+       
+        recognizedTextView.isHidden = false
+        recognizedTextView.text = text
+        editIcon.isHidden = false
+    }
     
     @objc private func cropTapped() {
-        cropView.isHidden.toggle()
+        let cropVC = CropViewController(image: imageView.image!, coordinator: coordinator)
+        cropVC.delegate = self
+        cropVC.modalPresentationStyle = .fullScreen
+        present(cropVC, animated: true)
+    }
+    
+    
+    func showError(_ message: String) {
+        let alert = UIAlertController(title: "Recognized text:", message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "ОК", style: .default))
+        present(alert, animated: true)
     }
 }
+
+extension ScanningResultViewController: CropViewControllerDelegate {
+    func cropViewControllerDidFinish(image: UIImage) {
+        imageView.image = image
+    }
+}
+
+
+extension ScanningResultViewController: UITextViewDelegate {
+    func textViewDidBeginEditing(_ textView: UITextView) {
+        editIcon.isHidden = true
+    }
+    func textViewDidEndEditing(_ textView: UITextView) {
+        editIcon.isHidden = false
+    }
+    
+    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+        if text == "\n" {
+            textView.resignFirstResponder()
+            return false
+        }
+        return true
+    }
+}
+

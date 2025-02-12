@@ -22,4 +22,14 @@ class HomeCoordinator: Coordinator {
         let settingsCoordinator = SettingsCoordinator(navigationController: navigationController)
         settingsCoordinator.start()
     }
+    
+    func openTranslate() {
+       let translateCoordinator = TranslateCoordinator(navigationController: navigationController)
+        translateCoordinator.start()
+    }
+    
+    func openChat(with subject: Subject? = nil) {
+        let chatCoordinator = ChatCoordinator(navigationController: navigationController)
+        chatCoordinator.start(with: subject)
+    }
 }

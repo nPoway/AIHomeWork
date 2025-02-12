@@ -10,7 +10,7 @@ final class CropView: UIView {
     
     private let borderLayer: CAShapeLayer = {
         let layer = CAShapeLayer()
-        layer.strokeColor = UIColor.white.cgColor
+        layer.strokeColor = UIColor.lightGray.cgColor
         layer.lineWidth = 0.5
         layer.fillColor = UIColor.clear.cgColor
         return layer
@@ -48,6 +48,7 @@ final class CropView: UIView {
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        backgroundColor = UIColor.black.withAlphaComponent(0.7)
         layer.addSublayer(borderLayer)
         cornerMarkers.forEach { layer.addSublayer($0) }
         edgeMarkers.forEach { layer.addSublayer($0) }
@@ -64,6 +65,7 @@ final class CropView: UIView {
     override func layoutSubviews() {
         super.layoutSubviews()
         
+        
         updateMask()
         updateBorder()
         positionCornerMarkers()
@@ -78,11 +80,13 @@ final class CropView: UIView {
     
     private func updateMask() {
         let maskLayer = CAShapeLayer()
-        let path = UIBezierPath(rect: bounds)
-        let transparentPath = UIBezierPath(rect: cropRect)
-        path.append(transparentPath)
-        maskLayer.path = path.cgPath
+        let outerPath = UIBezierPath(rect: bounds)
+        let holePath = UIBezierPath(rect: cropRect)
+        outerPath.append(holePath)
+        
+        maskLayer.path = outerPath.cgPath
         maskLayer.fillRule = .evenOdd
+        layer.mask = maskLayer
     }
     
     private func updateBorder() {
@@ -131,7 +135,8 @@ final class CropView: UIView {
             }
             
             cornerMarkers[index].path = path.cgPath
-            cornerMarkers[index].strokeColor = UIColor.white.cgColor
+            cornerMarkers[index].strokeColor = UIColor.lightGray.cgColor
+            
             cornerMarkers[index].lineWidth = lineWidth
             cornerMarkers[index].fillColor = UIColor.clear.cgColor
         }
@@ -161,7 +166,7 @@ final class CropView: UIView {
             path.addLine(to: end)
             
             edgeMarkers[index].path = path.cgPath
-            edgeMarkers[index].strokeColor = UIColor.white.cgColor
+            edgeMarkers[index].strokeColor = UIColor.lightGray.cgColor
             edgeMarkers[index].lineWidth = lineWidth
             edgeMarkers[index].fillColor = UIColor.clear.cgColor
         }
