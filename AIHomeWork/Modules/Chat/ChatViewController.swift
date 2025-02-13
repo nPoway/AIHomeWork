@@ -1,10 +1,14 @@
 import UIKit
+import PhotosUI
 
 final class ChatViewController: UIViewController {
+    
     
     // MARK: - Properties
     
     private let viewModel: ChatViewModel
+    private let coordinator: ChatCoordinator
+    private var messageInputBottomConstraint: NSLayoutConstraint?
     
     private lazy var customNavigationBar: ChatNavigationView = {
         let bar = ChatNavigationView()
@@ -41,11 +45,9 @@ final class ChatViewController: UIViewController {
         let placeholderText = "Type here..."
         let attributes: [NSAttributedString.Key: Any] = [
             .foregroundColor: UIColor.lightGray,
-            .font: UIFont.plusJakartaSans(.regular, size: 15) // Custom font
+            .font: UIFont.plusJakartaSans(.regular, size: 15)
         ]
         textField.attributedPlaceholder = NSAttributedString(string: placeholderText, attributes: attributes)
-        
-        
         return textField
     }()
     
@@ -57,17 +59,22 @@ final class ChatViewController: UIViewController {
         button.addTarget(self, action: #selector(sendButtonTapped), for: .touchUpInside)
         return button
     }()
+   
     
-    private lazy var mainActivityIndicator: UIActivityIndicatorView = {
-        let indicator = UIActivityIndicatorView(style: .medium)
-        indicator.hidesWhenStopped = true
-        return indicator
+    private lazy var attachmentButton: UIButton = {
+        let button = UIButton(type: .system)
+        let paperclipImage = UIImage.scanChatIcon.resizeImage(to: CGSize(width: 32, height: 32))
+        button.setImage(paperclipImage, for: .normal)
+        button.tintColor = .gray
+        button.addTarget(self, action: #selector(attachmentButtonTapped), for: .touchUpInside)
+        return button
     }()
     
     // MARK: - Init
     
-    init(viewModel: ChatViewModel) {
+    init(viewModel: ChatViewModel, coordinator: ChatCoordinator) {
         self.viewModel = viewModel
+        self.coordinator = coordinator
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -86,6 +93,19 @@ final class ChatViewController: UIViewController {
         setupViews()
         setupConstraints()
         bindViewModel()
+        
+        let spacerView = UIView()
+        spacerView.widthAnchor.constraint(equalToConstant: 8).isActive = true
+        
+        let containerView = UIStackView(arrangedSubviews: [attachmentButton, spacerView])
+        containerView.axis = .horizontal
+        containerView.alignment = .center
+        
+        messageInputTextField.rightView = containerView
+        messageInputTextField.rightViewMode = .always
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
     }
     
     // MARK: - UI Setup
@@ -94,12 +114,10 @@ final class ChatViewController: UIViewController {
         if let subject = viewModel.currentSubject {
             customNavigationBar.changeTitle(subject.title)
         }
-        
         view.addSubview(customNavigationBar)
         view.addSubview(chatTableView)
         view.addSubview(messageInputTextField)
         view.addSubview(sendButton)
-        view.addSubview(mainActivityIndicator)
     }
     
     private func setupConstraints() {
@@ -107,37 +125,28 @@ final class ChatViewController: UIViewController {
         chatTableView.translatesAutoresizingMaskIntoConstraints = false
         messageInputTextField.translatesAutoresizingMaskIntoConstraints = false
         sendButton.translatesAutoresizingMaskIntoConstraints = false
-        mainActivityIndicator.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             customNavigationBar.topAnchor.constraint(equalTo: view.topAnchor),
             customNavigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             customNavigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             customNavigationBar.heightAnchor.constraint(equalToConstant: 110),
-            
-            // TableView
             chatTableView.topAnchor.constraint(equalTo: customNavigationBar.bottomAnchor),
             chatTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             chatTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            // The table’s bottom pinned to the textField top
             chatTableView.bottomAnchor.constraint(equalTo: messageInputTextField.topAnchor, constant: -15),
-            
-            // Send button
             sendButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -15),
             sendButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -5),
             sendButton.widthAnchor.constraint(equalToConstant: 45),
             sendButton.heightAnchor.constraint(equalToConstant: 45),
-            
-            // TextField
             messageInputTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             messageInputTextField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -8),
             messageInputTextField.centerYAnchor.constraint(equalTo: sendButton.centerYAnchor),
-            messageInputTextField.heightAnchor.constraint(equalToConstant: 45),
-            
-            // Activity indicator
-            mainActivityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            mainActivityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+            messageInputTextField.heightAnchor.constraint(equalToConstant: 45)
         ])
+        
+        messageInputBottomConstraint = messageInputTextField.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -5)
+        messageInputBottomConstraint?.isActive = true
     }
     
     // MARK: - ViewModel Bindings
@@ -149,20 +158,9 @@ final class ChatViewController: UIViewController {
                 self?.scrollToBottom()
             }
         }
-        
         viewModel.onErrorOccurred = { [weak self] message in
             DispatchQueue.main.async {
                 self?.showErrorAlert(message: message)
-            }
-        }
-        
-        viewModel.onLoadingStateChanged = { [weak self] isLoading in
-            DispatchQueue.main.async {
-                if isLoading {
-                    self?.mainActivityIndicator.startAnimating()
-                } else {
-                    self?.mainActivityIndicator.stopAnimating()
-                }
             }
         }
     }
@@ -176,7 +174,6 @@ final class ChatViewController: UIViewController {
     @objc private func sendButtonTapped() {
         guard let text = messageInputTextField.text?.trimmingCharacters(in: .whitespaces),
               !text.isEmpty else { return }
-        
         viewModel.userDidSendMessage(text)
         messageInputTextField.text = ""
         viewModel.addAssistantLoadingMessage()
@@ -219,12 +216,10 @@ extension ChatViewController: UITableViewDataSource {
             return cell
         }
         
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ChatMessageCell", for: indexPath)
-                as? ChatMessageCell else {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "ChatMessageCell", for: indexPath) as? ChatMessageCell else {
             return UITableViewCell()
         }
         cell.transform = CGAffineTransform(scaleX: 1, y: -1)
-        
         if message.isLoading {
             cell.configureLoadingBubbleForAssistant()
         } else {
@@ -241,4 +236,93 @@ extension ChatViewController: UITextFieldDelegate {
         sendButtonTapped()
         return true
     }
+    
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        guard let keyboardFrame = notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+              let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
+        let keyboardHeight = keyboardFrame.height
+        UIView.animate(withDuration: duration) {
+            self.messageInputBottomConstraint?.constant = -keyboardHeight - 10
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        guard let duration = notification.userInfo?[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval else { return }
+        UIView.animate(withDuration: duration) {
+            self.messageInputBottomConstraint?.constant = -5
+            self.view.layoutIfNeeded()
+        }
+    }
 }
+
+// MARK: - Attachment Handling
+
+extension ChatViewController {
+    @objc private func attachmentButtonTapped() {
+        let scanOptionsVC = ScanOptionsViewController()
+        scanOptionsVC.delegate = self
+        scanOptionsVC.modalPresentationStyle = .overFullScreen
+        present(scanOptionsVC, animated: false)
+    }
+
+    }
+    
+
+extension ChatViewController: ScanOptionsDelegate {
+    func didSelectCameraOption() {
+        coordinator.pushCamera { [weak self] image in
+            guard let self = self else { return }
+            
+            let text = messageInputTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            
+            if let base64 = image.jpegBase64 {
+                self.viewModel.userDidSendImageAndText(imageURL: "data:image/jpeg;base64,\(base64)", text: text)
+                
+                messageInputTextField.text = ""
+                viewModel.addAssistantLoadingMessage()
+            }
+            else {
+                self.showErrorAlert(message: "Failed to encode image.")
+            }
+        }
+    }
+    
+    func didSelectGalleryOption() {
+        var config = PHPickerConfiguration()
+        config.selectionLimit = 1
+        config.filter = .images
+        
+        let picker = PHPickerViewController(configuration: config)
+        picker.delegate = self
+        present(picker, animated: true)
+    }
+}
+
+extension ChatViewController: PHPickerViewControllerDelegate {
+    func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
+        picker.dismiss(animated: true)
+        
+        guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
+        
+        provider.loadObject(ofClass: UIImage.self) { image, _ in
+            if let selectedImage = image as? UIImage {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self else { return }
+                    let text = messageInputTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                    
+                    if let base64 = selectedImage.jpegBase64 {
+                        self.viewModel.userDidSendImageAndText(imageURL: "data:image/jpeg;base64,\(base64)", text: text)
+                        
+                        messageInputTextField.text = ""
+                        viewModel.addAssistantLoadingMessage()
+                    }
+                    else {
+                        self.showErrorAlert(message: "Failed to encode image.")
+                    }
+                }
+            }
+        }
+    }
+}
+

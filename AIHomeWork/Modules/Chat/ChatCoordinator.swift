@@ -17,7 +17,19 @@ final class ChatCoordinator: Coordinator {
     
     func start(with subject: Subject? = nil) {
         let viewModel = ChatViewModel(openAIService: OpenAIService(), subject: subject)
-        let chatVC = ChatViewController(viewModel: viewModel)
+        let chatVC = ChatViewController(viewModel: viewModel, coordinator: self)
         navigationController.pushViewController(chatVC, animated: true)
+    }
+    
+    func pushCamera(completion: @escaping (UIImage) -> Void) {
+            let scanCoordinator = ScanCoordinator(navigationController: navigationController)
+            scanCoordinator.onImageScanned = { image in
+                completion(image)
+            }
+            scanCoordinator.startScanOnlyFlow()
+        }
+    
+    func pushGallery(completion: @escaping (UIImage) -> Void) {
+        
     }
 }

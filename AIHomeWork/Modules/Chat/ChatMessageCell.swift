@@ -1,7 +1,7 @@
 import UIKit
 
 final class ChatMessageCell: UITableViewCell {
-    
+
     // MARK: - UI Elements
     
     private lazy var avatarImageView: UIImageView = {
@@ -10,6 +10,16 @@ final class ChatMessageCell: UITableViewCell {
         imageView.layer.cornerRadius = 16
         imageView.clipsToBounds = true
         imageView.image = UIImage.avatarIcon
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
+    }()
+    
+    private lazy var attachedImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        imageView.layer.cornerRadius = 8
+        imageView.isHidden = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -29,12 +39,9 @@ final class ChatMessageCell: UITableViewCell {
         return label
     }()
     
-    // Кастомное представление с анимацией печати
     private lazy var typingIndicatorView: TypingIndicatorView = {
         let view = TypingIndicatorView()
         view.translatesAutoresizingMaskIntoConstraints = false
-        // Фиксированные размеры для анимации,
-        // чтобы при отсутствии текста её размеры гарантированно учитывались в layout
         NSLayoutConstraint.activate([
             view.widthAnchor.constraint(equalToConstant: 46),
             view.heightAnchor.constraint(equalToConstant: 20)
@@ -46,10 +53,12 @@ final class ChatMessageCell: UITableViewCell {
     
     private var bubbleLeadingConstraint: NSLayoutConstraint!
     private var bubbleTrailingConstraint: NSLayoutConstraint!
-    
-    /// Ограничение минимальной высоты для bubbleView в режиме загрузки
+    private var bubbleBottomConstraintNoImage: NSLayoutConstraint!
+    private var bubbleBottomConstraintWithImage: NSLayoutConstraint!
+    private var attachedImageLeadingConstraint: NSLayoutConstraint!
+    private var attachedImageTrailingConstraint: NSLayoutConstraint!
+    private var attachedImageBottomConstraint: NSLayoutConstraint!
     private var loadingBubbleMinHeight: NSLayoutConstraint!
-    /// Ограничение минимальной ширины для bubbleView в режиме загрузки
     private var loadingBubbleMinWidth: NSLayoutConstraint!
     
     // MARK: - Init
@@ -58,11 +67,8 @@ final class ChatMessageCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupViews()
         setupConstraints()
-        
-        // Создаем ограничения для режима загрузки (изначально не активны)
         loadingBubbleMinHeight = bubbleView.heightAnchor.constraint(greaterThanOrEqualToConstant: 50)
         loadingBubbleMinHeight.isActive = false
-        
         loadingBubbleMinWidth = bubbleView.widthAnchor.constraint(greaterThanOrEqualToConstant: 80)
         loadingBubbleMinWidth.isActive = false
     }
@@ -76,19 +82,27 @@ final class ChatMessageCell: UITableViewCell {
     private func setupViews() {
         selectionStyle = .none
         backgroundColor = .clear
-        
         contentView.addSubview(avatarImageView)
         contentView.addSubview(bubbleView)
         bubbleView.addSubview(messageLabel)
         bubbleView.addSubview(typingIndicatorView)
+        contentView.addSubview(attachedImageView)
     }
     
     private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            avatarImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            avatarImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            avatarImageView.widthAnchor.constraint(equalToConstant: 40),
+            avatarImageView.heightAnchor.constraint(equalToConstant: 40)
+        ])
+        
         let maxBubbleWidth = bubbleView.widthAnchor.constraint(
             lessThanOrEqualTo: contentView.widthAnchor,
             multiplier: 0.80
         )
         maxBubbleWidth.priority = .required
+        maxBubbleWidth.isActive = true
         
         bubbleLeadingConstraint = bubbleView.leadingAnchor.constraint(
             equalTo: avatarImageView.trailingAnchor,
@@ -98,20 +112,28 @@ final class ChatMessageCell: UITableViewCell {
             equalTo: contentView.trailingAnchor,
             constant: -8
         )
+        bubbleLeadingConstraint.isActive = false
+        bubbleTrailingConstraint.isActive = false
+        
+        let bubbleTopConstraint = bubbleView.topAnchor.constraint(
+            equalTo: contentView.topAnchor,
+            constant: 8
+        )
+        bubbleTopConstraint.isActive = true
+        
+        bubbleBottomConstraintNoImage = bubbleView.bottomAnchor.constraint(
+            equalTo: contentView.bottomAnchor,
+            constant: -8
+        )
+        bubbleBottomConstraintNoImage.isActive = true
+        
+        bubbleBottomConstraintWithImage = bubbleView.bottomAnchor.constraint(
+            equalTo: attachedImageView.topAnchor,
+            constant: -8
+        )
+        bubbleBottomConstraintWithImage.isActive = false
         
         NSLayoutConstraint.activate([
-            avatarImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            avatarImageView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            avatarImageView.widthAnchor.constraint(equalToConstant: 40),
-            avatarImageView.heightAnchor.constraint(equalToConstant: 40),
-            
-            maxBubbleWidth,
-            bubbleLeadingConstraint,
-            bubbleTrailingConstraint,
-            
-            bubbleView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            bubbleView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-          
             messageLabel.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 8),
             messageLabel.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -8),
             messageLabel.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 12),
@@ -120,6 +142,22 @@ final class ChatMessageCell: UITableViewCell {
             typingIndicatorView.centerXAnchor.constraint(equalTo: bubbleView.centerXAnchor),
             typingIndicatorView.centerYAnchor.constraint(equalTo: bubbleView.centerYAnchor)
         ])
+        
+        attachedImageLeadingConstraint = attachedImageView.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor)
+        attachedImageLeadingConstraint.isActive = false
+        
+        attachedImageTrailingConstraint = attachedImageView.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor)
+        attachedImageTrailingConstraint.isActive = false
+        
+        attachedImageBottomConstraint = attachedImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
+        attachedImageBottomConstraint.isActive = true
+        
+        NSLayoutConstraint.activate([
+            attachedImageView.heightAnchor.constraint(lessThanOrEqualToConstant: 180),
+            attachedImageView.widthAnchor.constraint(lessThanOrEqualToConstant: 150)
+        ])
+        
+        attachedImageView.isHidden = true
     }
     
     // MARK: - Configuration
@@ -128,10 +166,13 @@ final class ChatMessageCell: UITableViewCell {
         typingIndicatorView.stopAnimating()
         typingIndicatorView.isHidden = true
         messageLabel.text = message.content
-            
-       
         loadingBubbleMinHeight.isActive = false
         loadingBubbleMinWidth.isActive = false
+        
+        bubbleBottomConstraintNoImage.isActive = false
+        bubbleBottomConstraintWithImage.isActive = false
+        attachedImageLeadingConstraint.isActive = false
+        attachedImageTrailingConstraint.isActive = false
         
         switch message.role {
         case "assistant", "system":
@@ -141,6 +182,8 @@ final class ChatMessageCell: UITableViewCell {
             bubbleView.backgroundColor = .systemBlue
             messageLabel.textColor = .white
             applyCustomBubbleMask(corners: [.layerMinXMaxYCorner, .layerMaxXMaxYCorner, .layerMaxXMinYCorner])
+            attachedImageTrailingConstraint.isActive = false
+            attachedImageLeadingConstraint.isActive = true
             
         case "user":
             avatarImageView.isHidden = true
@@ -149,9 +192,27 @@ final class ChatMessageCell: UITableViewCell {
             bubbleView.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
             messageLabel.textColor = .white
             applyCustomBubbleMask(corners: [.layerMinXMaxYCorner, .layerMinXMinYCorner, .layerMaxXMinYCorner])
+            attachedImageLeadingConstraint.isActive = false
+            attachedImageTrailingConstraint.isActive = true
             
         default:
             messageLabel.text = "Unknown role"
+        }
+        
+        if let imageURL = message.imageURL, imageURL.starts(with: "data:image/jpeg;base64,") {
+            attachedImageView.isHidden = false
+            bubbleBottomConstraintNoImage.isActive = false
+            bubbleBottomConstraintWithImage.isActive = true
+            let base64String = imageURL.replacingOccurrences(of: "data:image/jpeg;base64,", with: "")
+            attachedImageView.image = UIImage.fromBase64(base64String)
+            if messageLabel.text == "" {
+                bubbleView.backgroundColor = .clear
+            }
+        } else {
+            attachedImageView.isHidden = true
+            attachedImageView.image = nil
+            bubbleBottomConstraintWithImage.isActive = false
+            bubbleBottomConstraintNoImage.isActive = true
         }
     }
     
@@ -160,19 +221,18 @@ final class ChatMessageCell: UITableViewCell {
         avatarImageView.isHidden = false
         bubbleTrailingConstraint.isActive = false
         bubbleLeadingConstraint.isActive = true
-        
-        // Активируем ограничения, чтобы фон имел минимальные размеры (и по высоте, и по ширине)
         loadingBubbleMinHeight.isActive = true
         loadingBubbleMinWidth.isActive = true
-        
         bubbleView.backgroundColor = .systemBlue
         messageLabel.textColor = .white
-        
         typingIndicatorView.startAnimating()
         typingIndicatorView.isHidden = false
     }
+    
+    // MARK: - Private Methods
+    
     private func applyCustomBubbleMask(corners: CACornerMask) {
-            bubbleView.layer.cornerRadius = 12
-            bubbleView.layer.maskedCorners = corners
-        }
+        bubbleView.layer.cornerRadius = 12
+        bubbleView.layer.maskedCorners = corners
+    }
 }

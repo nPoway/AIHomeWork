@@ -137,7 +137,7 @@ class ScanView: UIView {
         ])
     }
     
-    private func setupNavigationBar() {
+    func setupNavigationBar() {
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
         addSubview(navigationBar)
         

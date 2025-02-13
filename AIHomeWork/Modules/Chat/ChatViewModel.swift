@@ -95,6 +95,41 @@ final class ChatViewModel {
         }
     }
     
+    func userDidSendImageAndText(imageURL: String, text: String) {
+        let userMessage = OpenAIChatMessage(
+            role: "user",
+            content: text,
+            imageURL: imageURL,
+            isLoading: false
+        )
+        messages.append(userMessage)
+        onMessagesUpdate?()
+        
+        let filteredMessagesForAPI = messages.filter {
+            $0.role == "user" || $0.role == "assistant" || $0.role == "system"
+        }
+        
+        onLoadingStateChanged?(true)
+        
+        openAIService.sendChat(messages: filteredMessagesForAPI) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.onLoadingStateChanged?(false)
+                
+                switch result {
+                case .success(let assistantReply):
+                    self?.updateAssistantLoadingMessage(with: assistantReply)
+                case .failure(let error):
+                    print("Chat API Error: \(error.localizedDescription)")
+                    self?.removeAssistantLoadingMessage()
+                    self?.onErrorOccurred?(error.localizedDescription)
+                }
+            }
+        }
+
+    }
+
+
+    
     /// Insert an “assistant loading” message as soon as the user sends a message
     func addAssistantLoadingMessage() {
         let loadingMessage = OpenAIChatMessage(role: "assistant", content: "", isLoading: true)

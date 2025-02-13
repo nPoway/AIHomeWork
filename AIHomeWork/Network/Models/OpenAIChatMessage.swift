@@ -4,14 +4,12 @@ struct OpenAIChatMessage: Codable {
     let role: String
     var content: String
     
-    // Not part of the JSON. We'll set or clear this only in our Swift code.
+    var imageURL: String?
+    
     var isLoading: Bool = false
     
-    // Add CodingKeys to ignore `isLoading` so it won't break decoding:
     private enum CodingKeys: String, CodingKey {
-        case role
-        case content
-        // No isLoading key, so decoding won't expect it.
+        case role, content, imageURL
     }
 }
 
@@ -26,4 +24,25 @@ struct OpenAIChatRequest: Codable {
         case model, messages, temperature
         case maxTokens = "max_tokens"
     }
+}
+
+struct VisionMessagePart: Encodable {
+    let type: String
+    let text: String?
+    let imageURL: ImageURL?
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case text
+        case imageURL = "image_url"
+    }
+}
+
+struct ImageURL: Encodable {
+    let url: String
+}
+
+struct VisionChatMessage: Encodable {
+    let role: String
+    let content: [VisionMessagePart]
 }

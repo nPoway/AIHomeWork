@@ -8,20 +8,22 @@ class ScanViewController: UIViewController {
     private let viewModel = ScanViewModel()
     private let coordinator: ScanCoordinator
     
+    private let showCustomNavBar: Bool
     
-    
-    init(coordinator: ScanCoordinator) {
+    init(coordinator: ScanCoordinator, showCustomNavBar: Bool = false) {
         self.coordinator = coordinator
+        self.showCustomNavBar = showCustomNavBar
         super.init(nibName: nil, bundle: nil)
     }
     
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
+    required init?(coder: NSCoder) { fatalError() }
     
     
     override func loadView() {
         view = scanView
+        if showCustomNavBar {
+            scanView.setupNavigationBar()
+        }
     }
     
     override func viewDidLoad() {
@@ -46,7 +48,12 @@ class ScanViewController: UIViewController {
         
         viewModel.onImageSelected = { [weak self] image in
             guard let self = self else { return }
-            self.coordinator.showScanningResult(with: image)
+            if showCustomNavBar {
+                coordinator.finishWithImage(image)
+            }
+            else {
+                coordinator.showScanningResult(with: image)
+            }
         }
         
         viewModel.onCameraReady = { [weak self] in
@@ -60,7 +67,7 @@ class ScanViewController: UIViewController {
             }
         }
     }
-
+    
     
     @objc
     private func capturePhoto() {
@@ -77,7 +84,7 @@ class ScanViewController: UIViewController {
         var config = PHPickerConfiguration()
         config.selectionLimit = 1
         config.filter = .images
-
+        
         let picker = PHPickerViewController(configuration: config)
         picker.delegate = self
         present(picker, animated: true)
@@ -99,39 +106,10 @@ class ScanViewController: UIViewController {
         present(alert, animated: true)
     }
     
-    private func showPhotoLibraryPermissionAlert() {
-        let alert = UIAlertController(
-            title: "Photo Library Access Denied",
-            message: "Allow access to the photo library in settings to select images.",
-            preferredStyle: .alert
-        )
-        alert.addAction(UIAlertAction(title: "Settings", style: .default, handler: { _ in
-            if let settingsURL = URL(string: UIApplication.openSettingsURLString),
-               UIApplication.shared.canOpenURL(settingsURL) {
-                UIApplication.shared.open(settingsURL)
-            }
-        }))
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
-        present(alert, animated: true)
-    }
-
     
     @objc
     private func backTapped() {
         coordinator.finish()
-    }
-}
-
-extension ScanViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
-        picker.dismiss(animated: true)
-        if let selectedImage = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage {
-            viewModel.imageSelected(selectedImage)
-        }
-    }
-    
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        picker.dismiss(animated: true)
     }
 }
 
@@ -140,7 +118,7 @@ extension ScanViewController: PHPickerViewControllerDelegate {
         picker.dismiss(animated: true)
         
         guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else { return }
-
+        
         provider.loadObject(ofClass: UIImage.self) { image, _ in
             if let selectedImage = image as? UIImage {
                 DispatchQueue.main.async {

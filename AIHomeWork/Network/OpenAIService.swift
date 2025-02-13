@@ -101,34 +101,67 @@ final class OpenAIService: OpenAIServiceProtocol {
 
     private func sendChatRequest(_ body: OpenAIChatRequest,
                                  completion: @escaping (Result<String, Error>) -> Void) {
+        let hasImage = shouldUseVision(for: body.messages)
+        let modelName = hasImage ? "gpt-4o-mini" : body.model
+
+        let finalJSON: [String: Any]
+
+        if hasImage {
+            let visionMessages = makeVisionMessages(from: body.messages)
+            finalJSON = [
+                "model": modelName,
+                "messages": visionMessages.map { message -> [String: Any] in
+                    return [
+                        "role": message.role,
+                        "content": message.content.map { part -> [String: Any] in
+                            if part.type == "text" {
+                                return ["type": "text", "text": part.text ?? ""]
+                            } else {
+                                return ["type": "image_url", "image_url": ["url": part.imageURL?.url ?? ""]]
+                            }
+                        }
+                    ]
+                },
+                "max_tokens": body.maxTokens,
+                "temperature": body.temperature
+            ]
+        } else {
+            finalJSON = [
+                "model": modelName,
+                "messages": body.messages.map { ["role": $0.role, "content": $0.content] },
+                "max_tokens": body.maxTokens,
+                "temperature": body.temperature
+            ]
+        }
+
         guard let url = URL(string: OpenAIEndpoint.chatCompletions) else {
             completion(.failure(OpenAIError.invalidURL))
             return
         }
-        
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-        
+
         do {
-            request.httpBody = try JSONEncoder().encode(body)
+            request.httpBody = try JSONSerialization.data(withJSONObject: finalJSON, options: [])
         } catch {
-            completion(.failure(error))
+            completion(.failure(OpenAIError.requestFailed("JSON Encoding Error: \(error.localizedDescription)")))
             return
         }
-        
+
         let task = session.dataTask(with: request) { data, response, error in
             if let error = error {
                 completion(.failure(OpenAIError.requestFailed(error.localizedDescription)))
                 return
             }
-            
+
             guard let data = data else {
                 completion(.failure(OpenAIError.noData))
                 return
             }
-            
+
             do {
                 let responseModel = try JSONDecoder().decode(OpenAIChatResponse.self, from: data)
                 if let firstChoice = responseModel.choices.first {
@@ -137,12 +170,17 @@ final class OpenAIService: OpenAIServiceProtocol {
                     completion(.failure(OpenAIError.emptyResponse))
                 }
             } catch {
+                if let responseString = String(data: data, encoding: .utf8) {
+                    print("Decoding failed. Raw response: \(responseString)")
+                }
                 completion(.failure(OpenAIError.decodingFailed))
             }
         }
         
         task.resume()
     }
+
+
    
     func makeSystemPrompt(for subject: Subject) -> String {
         switch subject {
@@ -207,8 +245,12 @@ final class OpenAIService: OpenAIServiceProtocol {
 extension OpenAIService {
     
     // MARK: - Send Chat with Full Context
-    func sendChat(messages: [OpenAIChatMessage],
-                  completion: @escaping (Result<String, Error>) -> Void) {
+    func sendChat(messages: [OpenAIChatMessage], completion: @escaping (Result<String, Error>) -> Void) {
+        guard !messages.isEmpty else {
+            completion(.failure(OpenAIError.requestFailed("Cannot send an empty message array.")))
+            return
+        }
+
         let requestBody = OpenAIChatRequest(
             model: "gpt-3.5-turbo",
             messages: messages,
@@ -217,6 +259,7 @@ extension OpenAIService {
         )
         sendChatRequest(requestBody, completion: completion)
     }
+
     
     private func moderateContent(_ text: String, completion: @escaping (Bool) -> Void) {
         guard let url = URL(string: "https://api.openai.com/v1/moderations") else {
@@ -247,10 +290,10 @@ extension OpenAIService {
 
             do {
                 let result = try JSONDecoder().decode(OpenAIModerationResponse.self, from: data)
-                let flagged = result.results.contains { $0.flagged } // Если хоть одно нарушение, блокируем
+                let flagged = result.results.contains { $0.flagged }
                 completion(!flagged)
             } catch {
-                completion(true) // Ошибка обработки ответа — не блокируем
+                completion(true)
             }
         }
 
@@ -263,4 +306,38 @@ extension OpenAIService {
     func getSystemPrompt(for subject: Subject) -> String {
         return makeSystemPrompt(for: subject)
     }
+    
+    private func shouldUseVision(for messages: [OpenAIChatMessage]) -> Bool {
+        return messages.contains { $0.imageURL != nil }
+    }
+    
+    private func makeVisionMessages(from messages: [OpenAIChatMessage]) -> [VisionChatMessage] {
+        return messages.map { msg in
+            var parts: [VisionMessagePart] = []
+            
+            // Если есть текст
+            if !msg.content.isEmpty {
+                parts.append(
+                    VisionMessagePart(type: "text",
+                                      text: msg.content,
+                                      imageURL: nil)
+                )
+            }
+            
+            // Если есть изображение
+            if let imageURL = msg.imageURL, !imageURL.isEmpty {
+                parts.append(
+                    VisionMessagePart(type: "image_url",
+                                      text: nil,
+                                      imageURL: ImageURL(url: imageURL))
+                )
+            }
+            
+            // Если вдруг случится так, что ни текста ни imageURL нет, parts будет пуст
+            // GPT-4 Vision при пустом content может вернуть ошибку; обычно лучше не слать пустые сообщения
+            
+            return VisionChatMessage(role: msg.role, content: parts)
+        }
+    }
+
 }

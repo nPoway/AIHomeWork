@@ -13,6 +13,17 @@ extension UIImage {
         guard let cgImage = image?.cgImage else { return nil }
         self.init(cgImage: cgImage)
     }
+    
+    var jpegBase64: String? {
+        guard let jpegData = self.jpegData(compressionQuality: 0.8) else { return nil }
+        return jpegData.base64EncodedString()
+    }
+    
+    static func fromBase64(_ base64String: String) -> UIImage? {
+            guard let data = Data(base64Encoded: base64String) else { return nil }
+            return UIImage(data: data)
+        }
+    
     func resizeImage(to targetSize: CGSize) -> UIImage? {
         let size = self.size
 
