@@ -125,7 +125,7 @@ final class ScanningResultViewController: UIViewController {
             navigationBar.topAnchor.constraint(equalTo: view.topAnchor),
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            navigationBar.heightAnchor.constraint(equalToConstant: 110)
+            navigationBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 90 : 110)
         ])
         
         navigationBar.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
@@ -164,13 +164,13 @@ final class ScanningResultViewController: UIViewController {
             imageView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 20),
             imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 35),
             imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -35),
-            imageView.heightAnchor.constraint(equalToConstant: 450),
+            imageView.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 300 : 450),
             
             
             
             continueButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             continueButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            continueButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -25),
+            continueButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: iphoneWithButton ? -5 : -25),
             continueButton.heightAnchor.constraint(equalToConstant: 50),
             
             retakeButton.bottomAnchor.constraint(equalTo: continueButton.topAnchor, constant: -10),
@@ -210,16 +210,19 @@ final class ScanningResultViewController: UIViewController {
     }
     
     @objc private func retakeTapped() {
+        triggerHapticFeedback(type: .selection)
         coordinator.dismissScanningResult()
     }
     
     @objc private func backTapped() {
+        triggerHapticFeedback(type: .selection)
         coordinator.dismissScanningResult()
     }
     
     @objc private func continueTapped() {
         if let recognizedText = recognizedText {
             coordinator.showSolution(with: recognizedText)
+            triggerHapticFeedback(type: .success)
         }
         else {
             startRecognition()
@@ -238,8 +241,10 @@ final class ScanningResultViewController: UIViewController {
                 let recognizedString = try await viewModel.recognizeText(from: image)
                 recognizedText = recognizedString
                 displayRecognizedText(recognizedString)
-            } catch {
-                print("Text recognition failed: \(error)")
+                triggerHapticFeedback(type: .success)
+            }
+            catch {
+                showError("Text recogintion failed - \(error). Try another image.")
             }
             
             activityIndicator.stopAnimating()
@@ -258,6 +263,7 @@ final class ScanningResultViewController: UIViewController {
     }
     
     @objc private func cropTapped() {
+        triggerHapticFeedback(type: .selection)
         let cropVC = CropViewController(image: imageView.image!, coordinator: coordinator)
         cropVC.delegate = self
         cropVC.modalPresentationStyle = .fullScreen
@@ -266,7 +272,8 @@ final class ScanningResultViewController: UIViewController {
     
     
     func showError(_ message: String) {
-        let alert = UIAlertController(title: "Recognized text:", message: message, preferredStyle: .alert)
+        triggerHapticFeedback(type: .error)
+        let alert = UIAlertController(title: "Error:", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "ОК", style: .default))
         present(alert, animated: true)
     }
@@ -281,6 +288,7 @@ extension ScanningResultViewController: CropViewControllerDelegate {
 
 extension ScanningResultViewController: UITextViewDelegate {
     func textViewDidBeginEditing(_ textView: UITextView) {
+        triggerHapticFeedback(type: .light)
         editIcon.isHidden = true
     }
     func textViewDidEndEditing(_ textView: UITextView) {

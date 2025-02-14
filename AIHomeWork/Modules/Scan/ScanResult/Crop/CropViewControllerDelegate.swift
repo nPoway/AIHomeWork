@@ -75,7 +75,7 @@ final class CropViewController: UIViewController {
             navigationBar.topAnchor.constraint(equalTo: view.topAnchor),
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            navigationBar.heightAnchor.constraint(equalToConstant: 110)
+            navigationBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 90 : 110)
         ])
         
         navigationBar.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
@@ -83,6 +83,7 @@ final class CropViewController: UIViewController {
     
     @objc private func backTapped() {
         dismiss(animated: true)
+        triggerHapticFeedback(type: .selection)
     }
     
     private func setupToolbar() {
@@ -185,15 +186,18 @@ final class CropViewController: UIViewController {
     // MARK: - Toolbar Button Actions
     
     @objc private func rotateLeftTapped() {
+        triggerHapticFeedback(type: .light)
         guard let currentImage = imageView.image else { return }
         let rotatedImage = viewModel.rotateImageBy90(currentImage, clockwise: true)
         image = rotatedImage
         imageView.image = rotatedImage
         imageView.transform = .identity
         applyTransformAnimated()
+        
     }
     
     @objc private func rotateRightTapped() {
+        triggerHapticFeedback(type: .light)
         guard let currentImage = imageView.image else { return }
         let rotatedImage = viewModel.rotateImageBy90(currentImage, clockwise: false)
         image = rotatedImage
@@ -203,6 +207,7 @@ final class CropViewController: UIViewController {
     }
     
     @objc private func flipVerticalTapped() {
+        triggerHapticFeedback(type: .light)
         guard let currentImage = imageView.image else { return }
         let rotated180 = viewModel.rotateImage180(currentImage)
         image = rotated180
@@ -212,6 +217,7 @@ final class CropViewController: UIViewController {
     }
     
     @objc private func cropRatioTapped() {
+        triggerHapticFeedback(type: .light)
         let alertController = UIAlertController(title: "Select Aspect Ratio",
                                                 message: nil,
                                                 preferredStyle: .actionSheet)
@@ -231,6 +237,7 @@ final class CropViewController: UIViewController {
             let action = UIAlertAction(title: name, style: .default) { _ in
                 let newRect = self.viewModel.computeCropRect(for: ratio, in: self.cropView.bounds)
                 self.cropView.cropRect = newRect
+                triggerHapticFeedback(type: .success)
             }
             alertController.addAction(action)
         }
@@ -262,9 +269,11 @@ final class CropViewController: UIViewController {
     
     @objc private func cancelTapped() {
         dismiss(animated: true)
+        triggerHapticFeedback(type: .light)
     }
     
     @objc private func doneTapped() {
+        triggerHapticFeedback(type: .success)
         let userRect = cropView.cropRect
         let rectInView = cropView.convert(userRect, to: view)
         

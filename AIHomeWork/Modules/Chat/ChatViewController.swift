@@ -39,9 +39,12 @@ import PhotosUI
         textField.layer.borderColor = UIColor.white.withAlphaComponent(0.1).cgColor
         textField.font = UIFont.plusJakartaSans(.regular, size: 15)
         textField.textColor = .white
-        textField.borderStyle = .roundedRect
         textField.returnKeyType = .send
         textField.delegate = self
+        
+        let paddingView = UIView(frame: CGRect(x: 0, y: 0, width: 15, height: textField.frame.height))
+            textField.leftView = paddingView
+            textField.leftViewMode = .always
         
         let placeholderText = "Type here..."
         let attributes: [NSAttributedString.Key: Any] = [
@@ -132,7 +135,7 @@ import PhotosUI
             customNavigationBar.topAnchor.constraint(equalTo: view.topAnchor),
             customNavigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             customNavigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            customNavigationBar.heightAnchor.constraint(equalToConstant: 110),
+            customNavigationBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 90 : 110),
             chatTableView.topAnchor.constraint(equalTo: customNavigationBar.bottomAnchor),
             chatTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             chatTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -175,6 +178,7 @@ import PhotosUI
                 self.viewModel.saveChatSession()
             }
         }
+        triggerHapticFeedback(type: .selection)
         navigationController?.popViewController(animated: true)
     }
     
@@ -183,7 +187,9 @@ import PhotosUI
               !text.isEmpty else { return }
         viewModel.userDidSendMessage(text)
         messageInputTextField.text = ""
+        messageInputTextField.resignFirstResponder()
         viewModel.addAssistantLoadingMessage()
+        triggerHapticFeedback(type: .success)
     }
     
     // MARK: - Helpers
@@ -191,6 +197,7 @@ import PhotosUI
     private func showErrorAlert(message: String) {
         let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
+        triggerHapticFeedback(type: .error)
         present(alert, animated: true)
     }
     
@@ -231,9 +238,35 @@ extension ChatViewController: UITableViewDataSource {
             cell.configureLoadingBubbleForAssistant()
         } else {
             cell.configure(with: message)
+            let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+                        cell.addGestureRecognizer(longPressGesture)
         }
         return cell
     }
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+        
+        guard let cell = gesture.view as? ChatMessageCell,
+              let indexPath = chatTableView.indexPath(for: cell) else { return }
+        
+        let indexInVisible = viewModel.visibleMessages.count - 1 - indexPath.row
+        let message = viewModel.visibleMessages[indexInVisible]
+        
+        if message.role == "date" || message.isLoading { return }
+        
+        let pasteboard = UIPasteboard.general
+        pasteboard.string = message.content
+        
+        let alert = UIAlertController(title: "Copied", message: "Message copied to clipboard", preferredStyle: .alert)
+        triggerHapticFeedback(type: .success)
+        self.present(alert, animated: true)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            alert.dismiss(animated: true)
+        }
+    }
+
+
 }
 
 // MARK: - UITextFieldDelegate
@@ -267,6 +300,7 @@ extension ChatViewController: UITextFieldDelegate {
 
 extension ChatViewController {
     @objc private func attachmentButtonTapped() {
+        triggerHapticFeedback(type: .light)
         let scanOptionsVC = ScanOptionsViewController()
         scanOptionsVC.delegate = self
         scanOptionsVC.modalPresentationStyle = .overFullScreen
@@ -278,6 +312,7 @@ extension ChatViewController {
 
 extension ChatViewController: ScanOptionsDelegate {
     func didSelectCameraOption() {
+        triggerHapticFeedback(type: .light)
         coordinator.pushCamera { [weak self] image in
             guard let self = self else { return }
             
@@ -296,6 +331,7 @@ extension ChatViewController: ScanOptionsDelegate {
     }
     
     func didSelectGalleryOption() {
+        triggerHapticFeedback(type: .light)
         var config = PHPickerConfiguration()
         config.selectionLimit = 1
         config.filter = .images
@@ -323,9 +359,11 @@ extension ChatViewController: PHPickerViewControllerDelegate {
                         
                         messageInputTextField.text = ""
                         viewModel.addAssistantLoadingMessage()
+                        triggerHapticFeedback(type: .success)
                     }
                     else {
                         self.showErrorAlert(message: "Failed to encode image.")
+                        triggerHapticFeedback(type: .error)
                     }
                 }
             }
@@ -338,6 +376,7 @@ extension ChatViewController {
         guard let session else { return }
         viewModel.userDidSendMessage(session.firstQuestion)
         viewModel.addAssistantLoadingMessage()
+        triggerHapticFeedback(type: .light)
     }
 }
 

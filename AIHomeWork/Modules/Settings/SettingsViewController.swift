@@ -68,7 +68,7 @@ final class SettingsViewController: UIViewController {
             navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            navigationBar.heightAnchor.constraint(equalToConstant: 50)
+            navigationBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 60 : 50)
         ])
     }
     

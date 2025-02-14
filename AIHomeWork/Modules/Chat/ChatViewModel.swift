@@ -161,9 +161,8 @@ final class ChatViewModel {
         let calendar = Calendar.current
         
         if calendar.isDateInToday(date) {
-            // e.g. "Today, January 10"
             let formatter = DateFormatter()
-            formatter.dateFormat = "MMMM d" // "January 10"
+            formatter.dateFormat = "MMMM d"
             let dayMonth = formatter.string(from: date)
             return "Today, \(dayMonth)"
             
@@ -194,12 +193,13 @@ final class ChatViewModel {
             let repository = RealmChatSessionRepository()
             try repository.create(session: chatSession)
             print("Saved succesfully")
-        } catch {
+        }
+        catch {
             print("Error while saving chat session: \(error)")
             onErrorOccurred?("Error while saving chat session: \(error.localizedDescription)")
         }
     }
-
+    
 }
 
 extension ChatViewModel {

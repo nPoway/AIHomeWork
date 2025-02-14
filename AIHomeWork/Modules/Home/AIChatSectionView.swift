@@ -16,7 +16,7 @@ final class AIChatSectionView: UICollectionReusableView {
     
     private let titleLabel: UILabel = {
         let label = UILabel()
-        label.text = "Ask the AI a Question"
+        label.text = " "
         label.font = UIFont.plusJakartaSans(.bold, size: 18)
         label.textColor = .white
         return label

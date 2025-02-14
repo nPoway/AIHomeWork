@@ -30,9 +30,6 @@ class ScanView: UIView {
         view.translatesAutoresizingMaskIntoConstraints = false
         return view
     }()
-
-
-
     
     let navigationBar = ScanNavigationBar()
     
@@ -115,14 +112,14 @@ class ScanView: UIView {
             blurredBackground.leadingAnchor.constraint(equalTo: leadingAnchor),
             blurredBackground.trailingAnchor.constraint(equalTo: trailingAnchor),
             blurredBackground.bottomAnchor.constraint(equalTo: bottomAnchor),
-            blurredBackground.heightAnchor.constraint(equalToConstant: 130),
+            blurredBackground.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 90 : 130),
             
             bottomControlsStack.bottomAnchor.constraint(equalTo: safeAreaLayoutGuide.bottomAnchor),
             bottomControlsStack.centerXAnchor.constraint(equalTo: centerXAnchor),
             bottomControlsStack.widthAnchor.constraint(equalToConstant: 250),
             
-            captureButton.heightAnchor.constraint(equalToConstant: 75),
-            captureButton.widthAnchor.constraint(equalToConstant: 75),
+            captureButton.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 65 : 75),
+            captureButton.widthAnchor.constraint(equalToConstant: iphoneWithButton ? 65 : 75),
             
             galleryButton.heightAnchor.constraint(equalToConstant: 32),
             galleryButton.widthAnchor.constraint(equalToConstant: 32),

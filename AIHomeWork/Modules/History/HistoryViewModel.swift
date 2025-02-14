@@ -13,7 +13,23 @@ final class HistoryViewModel {
     
     func loadHistory() {
         let results = repository.fetchAll()
+        
         sessions = Array(results)
+        
+        if sessions.count > 15 {
+            let excessSessions = sessions.suffix(from: 15)
+            
+            for session in excessSessions {
+                do {
+                    try repository.delete(session: session)
+                } catch {
+                    print("Ошибка при удалении устаревшей сессии: \(error)")
+                }
+            }
+           
+            sessions = Array(sessions.prefix(15))
+        }
+        
         onDataUpdated?()
     }
     

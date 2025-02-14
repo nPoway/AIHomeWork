@@ -82,4 +82,20 @@ final class TranslateViewModel {
             targetLanguage = newLanguage
         }
     }
+    
+    func saveChatSession() {
+        let subjectTitle = "Translate"
+        
+        let chatSession = RealmChatSession(subject: subjectTitle, firstQuestion: inputText)
+        
+        do {
+            let repository = RealmChatSessionRepository()
+            try repository.create(session: chatSession)
+            print("Saved succesfully")
+        }
+        catch {
+            print("Error while saving chat session: \(error)")
+            onErrorOccurred?("Error while saving chat session: \(error.localizedDescription)")
+        }
+    }
 }

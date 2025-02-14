@@ -80,7 +80,7 @@ final class HistoryViewController: BaseViewController {
             navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            navigationBar.heightAnchor.constraint(equalToConstant: 50)
+            navigationBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 60 : 50)
         ])
     }
     
@@ -140,8 +140,13 @@ extension HistoryViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         let session = viewModel.sessions[indexPath.row]
-        coordinator.showChat(with: session)
-       
+        if session.subject == "Translate" {
+            coordinator.showTranslate(with: session)
+            viewModel.deleteSession(at: indexPath.row)
+        }
+        else {
+            coordinator.showChat(with: session)
+        }
     }
     
     func tableView(_ tableView: UITableView,

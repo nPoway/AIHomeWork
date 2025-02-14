@@ -9,6 +9,14 @@ final class TranslateViewController: UIViewController {
     private let sourceLanguageButton = UIButton()
     private let targetLanguageButton = UIButton()
     private let swapLanguagesButton = UIButton()
+    
+    private let customScrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.backgroundColor = .clear
+        scrollView.isScrollEnabled = true
+        return scrollView
+    }()
+    
     private let inputTextView: UITextView = {
         let textView = UITextView()
         textView.backgroundColor = UIColor.darkGray.withAlphaComponent(0.2)
@@ -58,8 +66,9 @@ final class TranslateViewController: UIViewController {
 
     
     private let translateButton: UIButton = {
-        let button = UIButton()
+        let button = UIButton(type: .system)
         button.setTitle("Translate", for: .normal)
+        button.setTitleColor(.white, for: .normal)
         button.titleLabel?.font = .plusJakartaSans(.semiBold, size: 18)
         button.backgroundColor = .customPrimary
         button.layer.cornerRadius = 10
@@ -104,7 +113,14 @@ final class TranslateViewController: UIViewController {
     
     // MARK: - Lifecycle
     
-    init(coordinator: TranslateCoordinator) {
+    init(coordinator: TranslateCoordinator, text: String? = nil) {
+        if let text {
+            self.inputTextView.text = text
+            inputPlaceholderLabel.isHidden = true
+            viewModel.updateInputText(text)
+            self.charCountLabel.text = "\(text.count)/1000"
+        }
+        
         self.coordinator = coordinator
         super.init(nibName: nil, bundle: nil)
     }
@@ -127,8 +143,12 @@ final class TranslateViewController: UIViewController {
     // MARK: - UI Setup
     private func setupUI() {
         view.backgroundColor = .black
-        [navigationBar,sourceLanguageButton, targetLanguageButton, swapLanguagesButton, inputTextView, translationTextView, translateButton, inputLabel, translationLabel,charCountLabel,inputPlaceholderLabel, translationPlaceholderLabel,activityIndicator].forEach {
+        [navigationBar,sourceLanguageButton, targetLanguageButton, swapLanguagesButton, customScrollView].forEach {
             view.addSubview($0)
+            $0.translatesAutoresizingMaskIntoConstraints = false
+        }
+        [inputTextView, translationTextView, translateButton, inputLabel, translationLabel,charCountLabel,inputPlaceholderLabel, translationPlaceholderLabel,activityIndicator].forEach {
+            customScrollView.addSubview($0)
             $0.translatesAutoresizingMaskIntoConstraints = false
         }
         inputTextView.delegate = self
@@ -146,7 +166,7 @@ final class TranslateViewController: UIViewController {
             navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            navigationBar.heightAnchor.constraint(equalToConstant: 50)
+            navigationBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 60 : 50)
         ])
         
         NSLayoutConstraint.activate([
@@ -161,7 +181,6 @@ final class TranslateViewController: UIViewController {
             sourceLanguageButton.topAnchor.constraint(equalTo: swapLanguagesButton.topAnchor),
             sourceLanguageButton.bottomAnchor.constraint(equalTo: swapLanguagesButton.bottomAnchor),
             sourceLanguageButton.trailingAnchor.constraint(equalTo: swapLanguagesButton.leadingAnchor, constant: -15)
-            
         ])
         
         NSLayoutConstraint.activate([
@@ -171,13 +190,19 @@ final class TranslateViewController: UIViewController {
             targetLanguageButton.leadingAnchor.constraint(equalTo: swapLanguagesButton.trailingAnchor, constant: 15)
         ])
         
-        
-        
+        // Ограничиваем scrollView
         NSLayoutConstraint.activate([
-            inputLabel.topAnchor.constraint(equalTo: swapLanguagesButton.bottomAnchor, constant: 10),
-            inputLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 15),
-            inputLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -15),
-            inputLabel.heightAnchor.constraint(equalToConstant: 28)
+            customScrollView.topAnchor.constraint(equalTo: swapLanguagesButton.bottomAnchor, constant: 10),
+            customScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            customScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            customScrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+        
+        // Привязываем контент scrollView
+        NSLayoutConstraint.activate([
+            inputLabel.topAnchor.constraint(equalTo: customScrollView.contentLayoutGuide.topAnchor, constant: 10),
+            inputLabel.leadingAnchor.constraint(equalTo: customScrollView.frameLayoutGuide.leadingAnchor, constant: 15),
+            inputLabel.trailingAnchor.constraint(equalTo: customScrollView.frameLayoutGuide.trailingAnchor, constant: -15)
         ])
         
         NSLayoutConstraint.activate([
@@ -191,7 +216,7 @@ final class TranslateViewController: UIViewController {
             inputPlaceholderLabel.topAnchor.constraint(equalTo: inputTextView.topAnchor, constant: 12),
             inputPlaceholderLabel.leadingAnchor.constraint(equalTo: inputTextView.leadingAnchor, constant: 12)
         ])
-
+        
         
         NSLayoutConstraint.activate([
             charCountLabel.bottomAnchor.constraint(equalTo: inputTextView.bottomAnchor, constant: -12),
@@ -201,27 +226,25 @@ final class TranslateViewController: UIViewController {
         NSLayoutConstraint.activate([
             translationLabel.topAnchor.constraint(equalTo: inputTextView.bottomAnchor, constant: 10),
             translationLabel.leadingAnchor.constraint(equalTo: inputTextView.leadingAnchor),
-            translationLabel.trailingAnchor.constraint(equalTo: inputTextView.trailingAnchor),
-            translationLabel.heightAnchor.constraint(equalToConstant: 28)
+            translationLabel.trailingAnchor.constraint(equalTo: inputTextView.trailingAnchor)
         ])
+        
         NSLayoutConstraint.activate([
             translationTextView.topAnchor.constraint(equalTo: translationLabel.bottomAnchor, constant: 10),
             translationTextView.leadingAnchor.constraint(equalTo: inputTextView.leadingAnchor),
             translationTextView.trailingAnchor.constraint(equalTo: inputTextView.trailingAnchor),
             translationTextView.heightAnchor.constraint(equalToConstant: 235)
         ])
-        
         NSLayoutConstraint.activate([
             translationPlaceholderLabel.topAnchor.constraint(equalTo: translationTextView.topAnchor, constant: 12),
             translationPlaceholderLabel.leadingAnchor.constraint(equalTo: translationTextView.leadingAnchor, constant: 12)
         ])
-
-        
         NSLayoutConstraint.activate([
-            translateButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -30),
+            translateButton.topAnchor.constraint(equalTo: translationTextView.bottomAnchor, constant: 20),
             translateButton.leadingAnchor.constraint(equalTo: inputTextView.leadingAnchor),
             translateButton.trailingAnchor.constraint(equalTo: inputTextView.trailingAnchor),
-            translateButton.heightAnchor.constraint(equalToConstant: 50)
+            translateButton.heightAnchor.constraint(equalToConstant: 50),
+            translateButton.bottomAnchor.constraint(equalTo: customScrollView.contentLayoutGuide.bottomAnchor, constant: -20) // ЗАКРЕПЛЯЕМ КОНТЕНТ
         ])
         
         NSLayoutConstraint.activate([
@@ -229,6 +252,7 @@ final class TranslateViewController: UIViewController {
             activityIndicator.centerYAnchor.constraint(equalTo: translateButton.centerYAnchor)
         ])
     }
+
 
     private func setupLanguageButton(_ button: UIButton, title: String) {
         button.setTitle(title, for: .normal)
@@ -243,6 +267,12 @@ final class TranslateViewController: UIViewController {
     private func setupBindings() {
         viewModel.onTextChanged = { [weak self] text in
             self?.charCountLabel.text = "\(text.count)/1000"
+            if text.count > 1000 {
+                self?.charCountLabel.textColor = .red
+            }
+            else {
+                self?.charCountLabel.textColor = UIColor.white.withAlphaComponent(0.4)
+            }
         }
         
         viewModel.onTranslationChanged = { [weak self] translatedText in
@@ -291,6 +321,8 @@ final class TranslateViewController: UIViewController {
     
     @objc private func backTapped() {
         coordinator.finish()
+        guard !inputTextView.text.isEmpty else { return }
+        viewModel.saveChatSession()
     }
     
     @objc private func didTapLanguageButton(_ sender: UIButton) {
@@ -335,6 +367,54 @@ extension TranslateViewController: LanguageSelectionDelegate {
     func didSelectLanguage(_ language: Language) {
         guard let button = activeLanguageButton else { return }
         
+        let newLanguage = language
+        
+        if newLanguage.name == "Other" {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.presentLanguageInputAlert(for: button)
+            }
+        }
+        else {
+            if button == sourceLanguageButton {
+                updateLanguageSelection(for: button, with: newLanguage)
+            } else if button == targetLanguageButton {
+                updateLanguageSelection(for: button, with: newLanguage)
+            }
+        }
+    }
+}
+
+extension TranslateViewController {
+    private func presentLanguageInputAlert(for button: UIButton) {
+    let alertController = UIAlertController(
+        title: "Enter Language",
+        message: "Please enter the name of the language you want to use.",
+        preferredStyle: .alert
+    )
+    
+    alertController.addTextField { textField in
+        textField.placeholder = "Language name"
+        textField.autocapitalizationType = .words
+    }
+    
+    let confirmAction = UIAlertAction(title: "OK", style: .default) { [weak self] _ in
+        guard let self = self,
+              let languageName = alertController.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !languageName.isEmpty else { return }
+        
+        let customLanguage = Language(name: languageName, code: languageName, flag: "")
+        self.updateLanguageSelection(for: button, with: customLanguage)
+    }
+    
+    let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+    
+    alertController.addAction(confirmAction)
+    alertController.addAction(cancelAction)
+    
+    present(alertController, animated: true)
+}
+    
+    private func updateLanguageSelection(for button: UIButton, with language: Language) {
         if button == sourceLanguageButton {
             viewModel.updateLanguage(isSource: true, newLanguage: language)
             sourceLanguageButton.setTitle("\(language.name)", for: .normal)
@@ -343,7 +423,7 @@ extension TranslateViewController: LanguageSelectionDelegate {
             targetLanguageButton.setTitle("\(language.name)", for: .normal)
         }
     }
-}
 
+}
 
 

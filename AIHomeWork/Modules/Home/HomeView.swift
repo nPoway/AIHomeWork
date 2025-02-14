@@ -1,6 +1,6 @@
 import UIKit
 
-final class HomeView: BaseBlurredView {
+final class HomeView: BlurredGradientView {
     
     let navigationBar = HomeNavigationBar()
     
@@ -19,20 +19,20 @@ final class HomeView: BaseBlurredView {
         
         self.collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         super.init(frame: frame)
+        setupUI()
+        setupConstraints()
     }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func setupUI() {
-        
+    private func setupUI() {
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
-        backgroundColor = .black
         
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.register(SubjectCell.self, forCellWithReuseIdentifier: SubjectCell.identifier)
-        collectionView.backgroundColor = .black
+        collectionView.backgroundColor = .clear
         collectionView.register(AIChatSectionView.self,
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeaderAIChat,
                                 withReuseIdentifier: AIChatSectionView.identifier)
@@ -46,18 +46,19 @@ final class HomeView: BaseBlurredView {
         addSubview(collectionView)
     }
     
-    override func setupConstraints() {
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             navigationBar.topAnchor.constraint(equalTo: topAnchor),
             navigationBar.leadingAnchor.constraint(equalTo: leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: trailingAnchor),
-            navigationBar.heightAnchor.constraint(equalToConstant: 110),
-            
-            collectionView.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: 10),
+            navigationBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 90 : 110), // 110
+            collectionView.topAnchor.constraint(equalTo: navigationBar.bottomAnchor),
             collectionView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             collectionView.trailingAnchor.constraint(equalTo: trailingAnchor),
             collectionView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -90)
         ])
+        print(iphoneWithButton)
+        print("Screen size: \(screenSize.height)")
     }
     
     static func createSectionLayout(for section: Section) -> NSCollectionLayoutSection {

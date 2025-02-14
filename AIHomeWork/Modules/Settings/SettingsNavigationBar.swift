@@ -20,13 +20,6 @@ final class SettingsNavigationBar: BaseBlurredView {
         return button
     }()
     
-    private let proButton: UIButton = {
-        let button = UIButton()
-        button.setImage(UIImage.proLabel, for: .normal)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
-    
     private let bottomLine: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor(white: 1.0, alpha: 0.1)
@@ -46,7 +39,6 @@ final class SettingsNavigationBar: BaseBlurredView {
     override func setupUI() {
         addSubview(titleLabel)
         addSubview(backButton)
-        addSubview(proButton)
         addSubview(bottomLine)
         
         NSLayoutConstraint.activate([
@@ -57,11 +49,6 @@ final class SettingsNavigationBar: BaseBlurredView {
             
             titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
             titleLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
-            
-            proButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            proButton.centerYAnchor.constraint(equalTo: centerYAnchor),
-            proButton.widthAnchor.constraint(equalToConstant: 75),
-            proButton.heightAnchor.constraint(equalToConstant: 40),
             
             bottomLine.leadingAnchor.constraint(equalTo: leadingAnchor),
             bottomLine.trailingAnchor.constraint(equalTo: trailingAnchor),

@@ -11,6 +11,14 @@ final class HomeNavigationBar: UIView {
         return label
     }()
     
+    let proButton: UIButton = {
+        let button = UIButton()
+        let image = UIImage.proLabel.resizeImage(to: CGSize(width: 90, height: 50))
+        button.setImage(image, for: .normal)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     let settingsButton: UIButton = {
         let button = UIButton()
         let image = UIImage.settingsLogo
@@ -38,19 +46,30 @@ final class HomeNavigationBar: UIView {
     }
     
     private func setupUI() {
-        backgroundColor = .black
         addSubview(titleLabel)
         addSubview(settingsButton)
+        addSubview(proButton)
+        addSubview(bottomLine)
         
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             titleLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
+            titleLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -15),
             
             settingsButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             settingsButton.centerYAnchor.constraint(equalTo: titleLabel.centerYAnchor),
             settingsButton.widthAnchor.constraint(equalToConstant: 28),
             settingsButton.heightAnchor.constraint(equalToConstant: 28),
+            
+            proButton.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            proButton.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -10),
+            proButton.widthAnchor.constraint(equalToConstant: 85),
+            proButton.heightAnchor.constraint(equalToConstant: 45),
+            
+            bottomLine.leadingAnchor.constraint(equalTo: leadingAnchor),
+            bottomLine.trailingAnchor.constraint(equalTo: trailingAnchor),
+            bottomLine.bottomAnchor.constraint(equalTo: bottomAnchor),
+            bottomLine.heightAnchor.constraint(equalToConstant: 1)
         ])
     }
     

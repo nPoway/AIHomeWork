@@ -39,7 +39,12 @@ class ScanViewController: UIViewController {
         
         viewModel.onPhotoCaptured = { [weak self] image in
             guard let self = self else { return }
-            self.coordinator.showScanningResult(with: image)
+            if showCustomNavBar {
+                coordinator.finishWithImage(image)
+            }
+            else {
+                self.coordinator.showScanningResult(with: image)
+            }
         }
         
         viewModel.onCameraPermissionDenied = { [weak self] in
@@ -71,16 +76,19 @@ class ScanViewController: UIViewController {
     
     @objc
     private func capturePhoto() {
+        triggerHapticFeedback(type: .selection)
         viewModel.capturePhoto()
     }
     
     @objc
     private func toggleFlash() {
+        triggerHapticFeedback(type: .selection)
         viewModel.toggleFlash(button: scanView.flashButton)
     }
     
     @objc
     private func openGallery() {
+        triggerHapticFeedback(type: .selection)
         var config = PHPickerConfiguration()
         config.selectionLimit = 1
         config.filter = .images
@@ -109,6 +117,7 @@ class ScanViewController: UIViewController {
     
     @objc
     private func backTapped() {
+        triggerHapticFeedback(type: .selection)
         coordinator.finish()
     }
 }

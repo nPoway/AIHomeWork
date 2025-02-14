@@ -112,7 +112,7 @@ final class HistoryTableViewCell: UITableViewCell {
         if let subject {
             subjectImageView.image = UIImage(named: subject.imageName)
         } else {
-            subjectImageView.image = UIImage.chatClear
+            subjectImageView.image = UIImage.chatLogo
         }
     }
     

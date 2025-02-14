@@ -105,7 +105,7 @@ final class ScanOptionsViewController: UIViewController {
             containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            containerView.heightAnchor.constraint(equalToConstant: 280)
+            containerView.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 230 : 280)
         ])
         
         // Заголовок
@@ -148,7 +148,7 @@ final class ScanOptionsViewController: UIViewController {
             stackView.topAnchor.constraint(equalTo: topSeparator.bottomAnchor, constant: 25),
             stackView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
             stackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -80)
+            stackView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: iphoneWithButton ? -30 : -80)
         ])
     }
     
@@ -159,7 +159,8 @@ final class ScanOptionsViewController: UIViewController {
     }
     
     @objc private func dismissView() {
-        dismiss(animated: true)
+        dismiss(animated: false)
+        triggerHapticFeedback(type: .selection)
     }
     
     @objc private func cameraTapped() {

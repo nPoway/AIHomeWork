@@ -20,4 +20,9 @@ class HistoryCoordinator: Coordinator {
         let chatCoordinator = ChatCoordinator(navigationController: navigationController)
         chatCoordinator.startWithSession(with: session)
     }
+    
+    func showTranslate(with session: RealmChatSession) {
+        let translateCoordinator = TranslateCoordinator(navigationController: navigationController)
+        translateCoordinator.start(with: session.firstQuestion)
+    }
 }

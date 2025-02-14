@@ -47,7 +47,7 @@ final class ScanTypeContainerViewController: UIViewController {
             customNavBar.topAnchor.constraint(equalTo: view.topAnchor),
             customNavBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             customNavBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            customNavBar.heightAnchor.constraint(equalToConstant: 110)
+            customNavBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 90 : 110)
         ])
         
         customNavBar.backgroundColor = UIColor.black

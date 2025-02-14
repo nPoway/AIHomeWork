@@ -16,6 +16,11 @@ class TranslateCoordinator: Coordinator {
         navigationController.popViewController(animated: true)
     }
     
+    func start(with text: String) {
+        let vc = TranslateViewController(coordinator: self, text: text)
+        navigationController.pushViewController(vc, animated: true)
+    }
+    
     func makeViewController() -> UIViewController {
         let vc = TranslateViewController(coordinator: self)
         return vc

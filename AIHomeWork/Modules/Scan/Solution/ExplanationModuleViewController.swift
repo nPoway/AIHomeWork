@@ -24,6 +24,8 @@ final class ExplanationModuleViewController: UIViewController {
         return tableView
     }()
     
+    private var tableViewBottomConstraint: NSLayoutConstraint?
+    
     private let getExplanationButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Get Explanation", for: .normal)
@@ -92,11 +94,13 @@ final class ExplanationModuleViewController: UIViewController {
         nextTaskButton.translatesAutoresizingMaskIntoConstraints = false
         getExplanationButton.translatesAutoresizingMaskIntoConstraints = false
         
+        tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: getExplanationButton.topAnchor, constant: -10)
+        
         NSLayoutConstraint.activate([
             customNavigationBar.topAnchor.constraint(equalTo: view.topAnchor),
             customNavigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             customNavigationBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            customNavigationBar.heightAnchor.constraint(equalToConstant: 110),
+            customNavigationBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 90 : 110),
             
             nextTaskButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             nextTaskButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
@@ -111,7 +115,7 @@ final class ExplanationModuleViewController: UIViewController {
             tableView.topAnchor.constraint(equalTo: customNavigationBar.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: getExplanationButton.topAnchor, constant: -10)
+            tableViewBottomConstraint!
         ])
     }
     
@@ -143,11 +147,25 @@ final class ExplanationModuleViewController: UIViewController {
     
     // MARK: - Actions
     @objc private func getExplanationTapped() {
+        
+        triggerHapticFeedback(type: .success)
+        
         guard let previousAnswer = viewModel.messages.last(where: { $0.role == "assistant" && !$0.isLoading })?.content else {
             return
         }
         
         viewModel.clearMessagesForExplanation()
+        
+        
+        getExplanationButton.isHidden = true
+        nextTaskButton.isHidden = true
+        tableViewBottomConstraint?.isActive = false
+
+        tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -15)
+        tableViewBottomConstraint?.isActive = true
+
+        self.view.layoutIfNeeded()
+       
         
         let explanationPrompt = "Please give detail explanation of your previous answer: \(previousAnswer)"
         
@@ -160,10 +178,12 @@ final class ExplanationModuleViewController: UIViewController {
     
     @objc private func nextTaskTapped() {
         dismiss(animated: true)
+        triggerHapticFeedback(type: .success)
     }
     
     @objc private func backTapped() {
         dismiss(animated: true)
+        triggerHapticFeedback(type: .selection)
     }
 }
 

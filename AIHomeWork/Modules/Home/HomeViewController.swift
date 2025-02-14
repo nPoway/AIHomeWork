@@ -18,11 +18,12 @@ final class HomeViewController: BaseViewController {
     }
     
     override func loadView() {
+        super.loadView()
         self.view = homeView
-        
     }
     
     override func setupUI() {
+        view.backgroundColor = .primaryExtraDark
         setupTargets()
         setupDataSource()
         applySnapshot()
