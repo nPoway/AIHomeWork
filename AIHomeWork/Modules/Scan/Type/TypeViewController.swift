@@ -45,6 +45,17 @@ final class TypeViewController: UIViewController, UITextViewDelegate {
         return button
     }()
     
+    private let coordinator: ScanCoordinator
+    
+    init(coordinator: ScanCoordinator) {
+        self.coordinator = coordinator
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func loadView() {
         super.loadView()
         view = BlurredGradientView()
@@ -145,6 +156,6 @@ final class TypeViewController: UIViewController, UITextViewDelegate {
     }
     
     @objc private func solveTapped() {
-        print("Solve tapped with text: \(viewModel.inputText)")
+        coordinator.showSolution(with: viewModel.inputText)
     }
 }

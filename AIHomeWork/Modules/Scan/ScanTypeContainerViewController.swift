@@ -11,7 +11,10 @@ final class ScanTypeContainerViewController: UIViewController {
     private let scanVC: ScanViewController
     private let typeVC: TypeViewController
     
-    init(scanVC: ScanViewController, typeVC: TypeViewController) {
+    private let navController: UINavigationController
+    
+    init(scanVC: ScanViewController, typeVC: TypeViewController, navigationController: UINavigationController) {
+        self.navController = navigationController
         self.scanVC = scanVC
         self.typeVC = typeVC
         super.init(nibName: nil, bundle: nil)
@@ -25,7 +28,7 @@ final class ScanTypeContainerViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        navigationController?.isNavigationBarHidden = true
+        navController.isNavigationBarHidden = true
         
         view.backgroundColor = .black
         
@@ -64,7 +67,7 @@ final class ScanTypeContainerViewController: UIViewController {
     }
     
     @objc private func backTapped() {
-        navigationController?.popViewController(animated: true)
+        navController.popViewController(animated: true)
     }
     
     private func addChildVC(_ child: UIViewController) {

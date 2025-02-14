@@ -1,13 +1,14 @@
 import UIKit
 import PhotosUI
 
-final class ChatViewController: UIViewController {
+ class ChatViewController: UIViewController {
     
     
     // MARK: - Properties
     
     private let viewModel: ChatViewModel
     private let coordinator: ChatCoordinator
+    private let session: RealmChatSession?
     private var messageInputBottomConstraint: NSLayoutConstraint?
     
     private lazy var customNavigationBar: ChatNavigationView = {
@@ -72,7 +73,8 @@ final class ChatViewController: UIViewController {
     
     // MARK: - Init
     
-    init(viewModel: ChatViewModel, coordinator: ChatCoordinator) {
+    init(viewModel: ChatViewModel, coordinator: ChatCoordinator, session: RealmChatSession? = nil) {
+        self.session = session
         self.viewModel = viewModel
         self.coordinator = coordinator
         super.init(nibName: nil, bundle: nil)
@@ -168,6 +170,11 @@ final class ChatViewController: UIViewController {
     // MARK: - Actions
     
     @objc private func backTapped() {
+        if session == nil {
+            DispatchQueue.main.async() {
+                self.viewModel.saveChatSession()
+            }
+        }
         navigationController?.popViewController(animated: true)
     }
     
@@ -323,6 +330,14 @@ extension ChatViewController: PHPickerViewControllerDelegate {
                 }
             }
         }
+    }
+}
+
+extension ChatViewController {
+    func sendSavedMessage() {
+        guard let session else { return }
+        viewModel.userDidSendMessage(session.firstQuestion)
+        viewModel.addAssistantLoadingMessage()
     }
 }
 

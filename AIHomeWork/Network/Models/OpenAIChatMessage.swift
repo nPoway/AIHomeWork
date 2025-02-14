@@ -8,6 +8,8 @@ struct OpenAIChatMessage: Codable {
     
     var isLoading: Bool = false
     
+    var isHidden: Bool = false
+    
     private enum CodingKeys: String, CodingKey {
         case role, content, imageURL
     }

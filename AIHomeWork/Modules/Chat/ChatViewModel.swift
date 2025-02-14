@@ -8,22 +8,20 @@ final class ChatViewModel {
     
     var visibleMessages: [OpenAIChatMessage] {
         messages.filter { msg in
-            msg.role == "user" ||
-            msg.role == "assistant" ||
-            msg.role == "date"
+            (msg.role == "user" || msg.role == "assistant" || msg.role == "date") && !msg.isHidden
         }
     }
 
-    
-    // Callbacks for ViewController
     var onMessagesUpdate: (() -> Void)?
     var onErrorOccurred: ((String) -> Void)?
     var onLoadingStateChanged: ((Bool) -> Void)?
     
-    init(openAIService: OpenAIServiceProtocol, subject: Subject? = nil) {
+    init(openAIService: OpenAIServiceProtocol, subject: Subject? = nil, isInitMessageVisible: Bool = true) {
         self.openAIService = openAIService
         self.currentSubject = subject
-        setupInitialSystemMessage()
+        if isInitMessageVisible {
+            setupInitialSystemMessage()
+        }
     }
     
     private func setupInitialSystemMessage() {
@@ -41,10 +39,8 @@ final class ChatViewModel {
         let systemMessage = OpenAIChatMessage(role: "system", content: systemContent, isLoading: false)
         messages.append(systemMessage)
         
-        // 3) Add a *visible* assistant "welcome" message the user sees
         let welcomeText: String
         if let subject = currentSubject {
-            // Example: incorporate subject title
             welcomeText = """
             Hello! I'm your \(subject.title) Tutor!
             Let me know the topic you'd like assistance with, and I'll be happy to help.
@@ -60,13 +56,17 @@ final class ChatViewModel {
     }
 
     
-    func userDidSendMessage(_ text: String) {
+    func userDidSendMessage(_ text: String, showInChat: Bool = true) {
         guard !text.isEmpty else { return }
         
-        // Add user's message
-        let userMessage = OpenAIChatMessage(role: "user", content: text, isLoading: false)
-        messages.append(userMessage)
-        onMessagesUpdate?()
+        var userMessage = OpenAIChatMessage(role: "user", content: text, isLoading: false)
+            if !showInChat {
+                userMessage.isHidden = true
+            }
+            messages.append(userMessage)
+            if showInChat {
+                onMessagesUpdate?()
+            }
         
         let filteredMessagesForAPI = messages.filter { msg in
                 msg.role == "user" ||
@@ -74,7 +74,6 @@ final class ChatViewModel {
                 msg.role == "system"
             }
         
-        // Start requesting assistant’s response
         onLoadingStateChanged?(true)
         
         openAIService.sendChat(messages: filteredMessagesForAPI) { [weak self] result in
@@ -83,11 +82,9 @@ final class ChatViewModel {
                 
                 switch result {
                 case .success(let assistantReply):
-                    // Replace the last "loading" bubble with final text
                     self?.updateAssistantLoadingMessage(with: assistantReply)
                     
                 case .failure(let error):
-                    // Remove the loading bubble or show an error
                     self?.removeAssistantLoadingMessage()
                     self?.onErrorOccurred?(error.localizedDescription)
                 }
@@ -128,31 +125,25 @@ final class ChatViewModel {
 
     }
 
-
-    
-    /// Insert an “assistant loading” message as soon as the user sends a message
     func addAssistantLoadingMessage() {
         let loadingMessage = OpenAIChatMessage(role: "assistant", content: "", isLoading: true)
         messages.append(loadingMessage)
         onMessagesUpdate?()
     }
     
-    /// Once the assistant’s result arrives, replace the loading bubble’s content
     func updateAssistantLoadingMessage(with text: String) {
-        // Find the last loading message from the assistant
         if let lastIndex = messages.lastIndex(where: { $0.role == "assistant" && $0.isLoading }) {
             messages[lastIndex].content = text
             messages[lastIndex].isLoading = false
             onMessagesUpdate?()
-        } else {
-            // If for some reason we didn't find it, just append a new one
+        }
+        else {
             let newMessage = OpenAIChatMessage(role: "assistant", content: text, isLoading: false)
             messages.append(newMessage)
             onMessagesUpdate?()
         }
     }
     
-    /// If an error occurs, remove the loading bubble
     func removeAssistantLoadingMessage() {
         if let lastIndex = messages.lastIndex(where: { $0.role == "assistant" && $0.isLoading }) {
             messages.remove(at: lastIndex)
@@ -177,19 +168,43 @@ final class ChatViewModel {
             return "Today, \(dayMonth)"
             
         } else if calendar.isDateInYesterday(date) {
-            // e.g. "Yesterday, January 9"
             let formatter = DateFormatter()
-            formatter.dateFormat = "MMMM d" // "January 9"
+            formatter.dateFormat = "MMMM d"
             let dayMonth = formatter.string(from: date)
             return "Yesterday, \(dayMonth)"
             
         } else {
-            // e.g. "January 8, 2025"
             let formatter = DateFormatter()
-            formatter.dateStyle = .medium  // "Jan 8, 2025" in US locale
+            formatter.dateStyle = .medium
             formatter.timeStyle = .none
             return formatter.string(from: date)
         }
     }
+    
+    func saveChatSession() {
+        guard let firstUserMessage = messages.first(where: { $0.role == "user" && !$0.content.isEmpty }) else {
+            print("No messages to save")
+            return
+        }
+        let subjectTitle = currentSubject?.title ?? "AI Chat"
+        
+        let chatSession = RealmChatSession(subject: subjectTitle, firstQuestion: firstUserMessage.content)
+        
+        do {
+            let repository = RealmChatSessionRepository()
+            try repository.create(session: chatSession)
+            print("Saved succesfully")
+        } catch {
+            print("Error while saving chat session: \(error)")
+            onErrorOccurred?("Error while saving chat session: \(error.localizedDescription)")
+        }
+    }
 
+}
+
+extension ChatViewModel {
+    func clearMessagesForExplanation() {
+        messages.removeAll()
+        onMessagesUpdate?()
+    }
 }

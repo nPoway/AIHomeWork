@@ -13,9 +13,9 @@ final class ScanCoordinator: Coordinator {
     
     func start() {
         let scanVC = ScanViewController(coordinator: self)
-        let typeVC = TypeViewController()
+        let typeVC = TypeViewController(coordinator: self)
         
-        let containerVC = ScanTypeContainerViewController(scanVC: scanVC, typeVC: typeVC)
+        let containerVC = ScanTypeContainerViewController(scanVC: scanVC, typeVC: typeVC, navigationController: navigationController)
         
         navigationController.pushViewController(containerVC, animated: true)
     }
@@ -31,8 +31,7 @@ final class ScanCoordinator: Coordinator {
     
     func showScanningResult(with image: UIImage) {
         let scanningResultVC = ScanningResultViewController(coordinator: self, image: image)
-        scanningResultVC.modalPresentationStyle = .fullScreen
-        navigationController.present(scanningResultVC, animated: true)
+        navigationController.pushViewController(scanningResultVC, animated: true)
     }
     
     func finishWithImage(_ image: UIImage) {
@@ -41,7 +40,7 @@ final class ScanCoordinator: Coordinator {
     }
     
     func dismissScanningResult() {
-        navigationController.dismiss(animated: true)
+        pop()
     }
     
     func showViewController(_ viewController: UIViewController) {
@@ -50,6 +49,14 @@ final class ScanCoordinator: Coordinator {
     
     func pop() {
         navigationController.popViewController(animated: true)
+    }
+    
+    func showSolution(with text: String) {
+        let explanationModuleViewController = ExplanationModuleViewController(question: text, viewModel: ChatViewModel(openAIService: OpenAIService(), isInitMessageVisible: false))
+        explanationModuleViewController.modalPresentationStyle = .fullScreen
+        navigationController.present(explanationModuleViewController, animated: true) {
+            self.navigationController.popViewController(animated: false)
+        }
     }
 }
 

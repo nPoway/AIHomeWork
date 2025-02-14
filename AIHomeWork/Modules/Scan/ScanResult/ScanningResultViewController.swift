@@ -54,7 +54,7 @@ final class ScanningResultViewController: UIViewController {
         button.setTitle("Retake Photo", for: .normal)
         button.titleLabel?.font = UIFont.plusJakartaSans(.semiBold, size: 18)
         button.setTitleColor(.white, for: .normal)
-        button.layer.borderWidth = 0.5
+        button.layer.borderWidth = 1
         button.layer.borderColor = UIColor.customPrimary.cgColor
         button.layer.cornerRadius = 25
         return button
@@ -166,18 +166,23 @@ final class ScanningResultViewController: UIViewController {
             imageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -35),
             imageView.heightAnchor.constraint(equalToConstant: 450),
             
-            cropButton.topAnchor.constraint(equalTo: imageView.bottomAnchor, constant: 20),
-            cropButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            retakeButton.topAnchor.constraint(equalTo: cropButton.bottomAnchor, constant: 20),
+            
+            continueButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            continueButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            continueButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -25),
+            continueButton.heightAnchor.constraint(equalToConstant: 50),
+            
+            retakeButton.bottomAnchor.constraint(equalTo: continueButton.topAnchor, constant: -10),
             retakeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             retakeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             retakeButton.heightAnchor.constraint(equalToConstant: 50),
             
-            continueButton.topAnchor.constraint(equalTo: retakeButton.bottomAnchor, constant: 12),
-            continueButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            continueButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            continueButton.heightAnchor.constraint(equalToConstant: 50),
+            cropButton.bottomAnchor.constraint(equalTo: retakeButton.topAnchor, constant: -20),
+            cropButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            cropButton.heightAnchor.constraint(equalToConstant: 30),
+            
+            
             
             recognizedTextView.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 20),
             recognizedTextView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
@@ -214,7 +219,7 @@ final class ScanningResultViewController: UIViewController {
     
     @objc private func continueTapped() {
         if let recognizedText = recognizedText {
-            print(recognizedText)
+            coordinator.showSolution(with: recognizedText)
         }
         else {
             startRecognition()

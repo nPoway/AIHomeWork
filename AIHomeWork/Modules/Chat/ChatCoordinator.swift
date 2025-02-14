@@ -28,8 +28,10 @@ final class ChatCoordinator: Coordinator {
             }
             scanCoordinator.startScanOnlyFlow()
         }
-    
-    func pushGallery(completion: @escaping (UIImage) -> Void) {
-        
+    func startWithSession(with session: RealmChatSession) {
+        let viewModel = ChatViewModel(openAIService: OpenAIService(), subject: Subject(title: session.subject))
+        let chatVC = ChatViewController(viewModel: viewModel, coordinator: self, session: session)
+        navigationController.pushViewController(chatVC, animated: true)
+        chatVC.sendSavedMessage()
     }
 }

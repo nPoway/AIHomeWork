@@ -12,7 +12,12 @@ class HistoryCoordinator: Coordinator {
     func finish() {}
     
     func makeHistoryViewController() -> UIViewController {
-        let vc = HistoryViewController()
+        let vc = HistoryViewController(viewModel: HistoryViewModel(), coordinator: self)
         return vc
+    }
+    
+    func showChat(with session: RealmChatSession) {
+        let chatCoordinator = ChatCoordinator(navigationController: navigationController)
+        chatCoordinator.startWithSession(with: session)
     }
 }

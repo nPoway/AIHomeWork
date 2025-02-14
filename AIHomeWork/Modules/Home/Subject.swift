@@ -86,3 +86,22 @@ enum Section: Int, CaseIterable {
     }
 }
 
+extension Subject {
+    init?(title: String) {
+        switch title {
+        case "Math": self = .math
+        case "Programming": self = .programming
+        case "Economics": self = .economics
+        case "Chemistry": self = .chemistry
+        case "Biology": self = .biology
+        case "Physics": self = .physics
+        case "Geography": self = .geography
+        case "History": self = .history
+        case "Grammar": self = .grammar
+        case "Write Essay": self = .writeEssay
+        case "Translate": self = .translate
+        default:
+            return nil
+        }
+    }
+}
