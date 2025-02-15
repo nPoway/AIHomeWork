@@ -21,7 +21,7 @@ enum OpenAIError: Error, CustomStringConvertible {
             case .requestFailed(let message):
                 return "Request failed: \(message)"
             case .inappropriateContent:
-                return "The input text contains inappropriate content."
+                return "The input text contains inappropriate content. Try another message"
             }
         }
         

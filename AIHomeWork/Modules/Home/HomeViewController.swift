@@ -95,19 +95,23 @@ extension HomeViewController {
     private func navigateToDetail(for item: Subject) {
         if item == .translate {
             coordinator.openTranslate()
+            triggerHapticFeedback(type: .light)
         }
         else {
             coordinator.openChat(with: item)
+            triggerHapticFeedback(type: .light)
         }
     }
     
     @objc
     private func chatButtonTapped() {
         coordinator.openChat()
+        triggerHapticFeedback(type: .light)
     }
     
     @objc
     private func settingsTapped() {
         coordinator.openSettings()
+        triggerHapticFeedback(type: .light)
     }
 }

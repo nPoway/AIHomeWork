@@ -14,45 +14,87 @@ final class OpenAIService: OpenAIServiceProtocol {
 
     // MARK: - Fetch Answer for Subject
     func fetchAnswer(for subject: Subject,
-                     userQuestion: String,
-                     completion: @escaping (Result<String, Error>) -> Void) {
-        let systemPrompt = makeSystemPrompt(for: subject)
-        let messages = [
-            OpenAIChatMessage(role: "system", content: systemPrompt),
-            OpenAIChatMessage(role: "user", content: userQuestion)
-        ]
-        
-        let requestBody = OpenAIChatRequest(
-            model: "gpt-3.5-turbo",
-            messages: messages,
-            temperature: 0.7,
-            maxTokens: 512
-        )
-        
-        sendChatRequest(requestBody, completion: completion)
-    }
+                         userQuestion: String,
+                         completion: @escaping (Result<String, Error>) -> Void) {
+            moderateContent(userQuestion) { [weak self] isSafe in
+                guard isSafe else {
+                    completion(.failure(OpenAIError.inappropriateContent))
+                    return
+                }
+                
+                guard let self = self else { return }
+                let systemPrompt = self.makeSystemPrompt(for: subject)
+                let messages = [
+                    OpenAIChatMessage(role: "system", content: systemPrompt),
+                    OpenAIChatMessage(role: "user", content: userQuestion)
+                ]
+                
+                let requestBody = OpenAIChatRequest(
+                    model: "gpt-3.5-turbo",
+                    messages: messages,
+                    temperature: 0.7,
+                    maxTokens: 512
+                )
+                
+                self.sendChatRequest(requestBody) { result in
+                    switch result {
+                    case .success(let answer):
+                        self.moderateContent(answer) { isSafeAnswer in
+                            guard isSafeAnswer else {
+                                completion(.failure(OpenAIError.inappropriateContent))
+                                return
+                            }
+                            completion(.success(answer))
+                        }
+                    case .failure(let error):
+                        completion(.failure(error))
+                    }
+                }
+            }
+        }
     
     // MARK: - Open Topic Answer
     func fetchOpenTopicAnswer(_ userQuestion: String,
-                              completion: @escaping (Result<String, Error>) -> Void) {
-        let systemPrompt = """
-        You are a highly knowledgeable and patient homework assistant. Your task is to provide concise, accurate, and safe answers to homework-related questions. Use clear, simple language and include step-by-step explanations and examples when necessary, but avoid unnecessary elaboration. Always verify the correctness of your response and provide context to enhance understanding. If the question is ambiguous, seek clarification or explain the assumptions you’re making. Your tone should be respectful, supportive, and engaging, ensuring that students at various levels can benefit from your explanation.
-        """
-        
-        let messages = [
-            OpenAIChatMessage(role: "system", content: systemPrompt),
-            OpenAIChatMessage(role: "user", content: userQuestion)
-        ]
-        
-        let requestBody = OpenAIChatRequest(
-            model: "gpt-3.5-turbo",
-            messages: messages,
-            temperature: 0.7,
-            maxTokens: 512
-        )
-        
-        sendChatRequest(requestBody, completion: completion)
-    }
+                                  completion: @escaping (Result<String, Error>) -> Void) {
+            moderateContent(userQuestion) { [weak self] isSafe in
+                guard isSafe else {
+                    completion(.failure(OpenAIError.inappropriateContent))
+                    return
+                }
+                
+                guard let self = self else { return }
+                let systemPrompt = """
+                You are a highly knowledgeable and patient homework assistant. Your task is to provide concise, accurate, and safe answers to homework-related questions. Use clear, simple language and include step-by-step explanations and examples when necessary, but avoid unnecessary elaboration. Always verify the correctness of your response and provide context to enhance understanding. If the question is ambiguous, seek clarification or explain the assumptions you’re making. Your tone should be respectful, supportive, and engaging, ensuring that students at various levels can benefit from your explanation.
+                """
+                
+                let messages = [
+                    OpenAIChatMessage(role: "system", content: systemPrompt),
+                    OpenAIChatMessage(role: "user", content: userQuestion)
+                ]
+                
+                let requestBody = OpenAIChatRequest(
+                    model: "gpt-3.5-turbo",
+                    messages: messages,
+                    temperature: 0.7,
+                    maxTokens: 512
+                )
+                
+                self.sendChatRequest(requestBody) { result in
+                    switch result {
+                    case .success(let answer):
+                        self.moderateContent(answer) { isSafeAnswer in
+                            guard isSafeAnswer else {
+                                completion(.failure(OpenAIError.inappropriateContent))
+                                return
+                            }
+                            completion(.success(answer))
+                        }
+                    case .failure(let error):
+                        completion(.failure(error))
+                    }
+                }
+            }
+        }
 
     // MARK: - Translate Text
     func translateText(_ text: String,
@@ -250,19 +292,40 @@ extension OpenAIService {
     
     // MARK: - Send Chat with Full Context
     func sendChat(messages: [OpenAIChatMessage], completion: @escaping (Result<String, Error>) -> Void) {
-        guard !messages.isEmpty else {
-            completion(.failure(OpenAIError.requestFailed("Cannot send an empty message array.")))
-            return
+            guard !messages.isEmpty else {
+                completion(.failure(OpenAIError.requestFailed("Cannot send an empty message array.")))
+                return
+            }
+            
+            // Проходим по пользовательским сообщениям и проверяем их
+            let userMessages = messages.filter { $0.role == "user" }
+            let dispatchGroup = DispatchGroup()
+            var moderationFailed = false
+            
+            for message in userMessages {
+                dispatchGroup.enter()
+                moderateContent(message.content) { isSafe in
+                    if !isSafe { moderationFailed = true }
+                    dispatchGroup.leave()
+                }
+            }
+            
+            dispatchGroup.notify(queue: .main) { [weak self] in
+                guard moderationFailed == false else {
+                    completion(.failure(OpenAIError.inappropriateContent))
+                    return
+                }
+                
+                guard let self = self else { return }
+                let requestBody = OpenAIChatRequest(
+                    model: "gpt-3.5-turbo",
+                    messages: messages,
+                    temperature: 0.7,
+                    maxTokens: 512
+                )
+                self.sendChatRequest(requestBody, completion: completion)
+            }
         }
-
-        let requestBody = OpenAIChatRequest(
-            model: "gpt-3.5-turbo",
-            messages: messages,
-            temperature: 0.7,
-            maxTokens: 512
-        )
-        sendChatRequest(requestBody, completion: completion)
-    }
 
     
     private func moderateContent(_ text: String, completion: @escaping (Bool) -> Void) {

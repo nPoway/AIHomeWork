@@ -94,6 +94,7 @@ final class SettingsViewController: UIViewController {
     @objc
     private func backTapped() {
         coordinator.finish()
+        triggerHapticFeedback(type: .light)
     }
 }
 
@@ -111,6 +112,7 @@ extension SettingsViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        triggerHapticFeedback(type: .light)
         let action = viewModel.settingsOptions[indexPath.row].action
         action()
     }

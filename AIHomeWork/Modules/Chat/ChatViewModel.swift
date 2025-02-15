@@ -84,10 +84,14 @@ final class ChatViewModel {
                 case .success(let assistantReply):
                     self?.updateAssistantLoadingMessage(with: assistantReply)
                     
+                case .failure(let error as OpenAIError):
+                    self?.removeAssistantLoadingMessage()
+                    self?.onErrorOccurred?(error.localizedDescription)
                 case .failure(let error):
                     self?.removeAssistantLoadingMessage()
                     self?.onErrorOccurred?(error.localizedDescription)
                 }
+                
             }
         }
     }
@@ -115,10 +119,13 @@ final class ChatViewModel {
                 switch result {
                 case .success(let assistantReply):
                     self?.updateAssistantLoadingMessage(with: assistantReply)
-                case .failure(let error):
-                    print("Chat API Error: \(error.localizedDescription)")
+                case .failure(let error as OpenAIError):
+                    let errorMessage = "\(error.localizedDescription)"
                     self?.removeAssistantLoadingMessage()
-                    self?.onErrorOccurred?(error.localizedDescription)
+                    self?.onErrorOccurred?(errorMessage)
+                case .failure(let error):
+                    self?.removeAssistantLoadingMessage()
+                    self?.onErrorOccurred?("Unexpected error: \(error.localizedDescription)")
                 }
             }
         }

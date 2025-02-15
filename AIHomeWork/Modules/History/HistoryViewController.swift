@@ -143,9 +143,11 @@ extension HistoryViewController: UITableViewDelegate {
         if session.subject == "Translate" {
             coordinator.showTranslate(with: session)
             viewModel.deleteSession(at: indexPath.row)
+            triggerHapticFeedback(type: .light)
         }
         else {
             coordinator.showChat(with: session)
+            triggerHapticFeedback(type: .light)
         }
     }
     
@@ -155,6 +157,7 @@ extension HistoryViewController: UITableViewDelegate {
         if editingStyle == .delete {
             viewModel.deleteSession(at: indexPath.row)
             tableView.deleteRows(at: [indexPath], with: .automatic)
+            triggerHapticFeedback(type: .success)
         }
     }
 }

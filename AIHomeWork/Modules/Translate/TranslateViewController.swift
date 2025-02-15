@@ -190,7 +190,6 @@ final class TranslateViewController: UIViewController {
             targetLanguageButton.leadingAnchor.constraint(equalTo: swapLanguagesButton.trailingAnchor, constant: 15)
         ])
         
-        // Ограничиваем scrollView
         NSLayoutConstraint.activate([
             customScrollView.topAnchor.constraint(equalTo: swapLanguagesButton.bottomAnchor, constant: 10),
             customScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -303,6 +302,7 @@ final class TranslateViewController: UIViewController {
         viewModel.onErrorOccurred = { [weak self] errorMessage in
             DispatchQueue.main.async {
                 self?.showErrorAlert(message: errorMessage)
+                triggerHapticFeedback(type: .error)
             }
         }
         
@@ -340,10 +340,12 @@ final class TranslateViewController: UIViewController {
 
     @objc private func didTapSwapLanguages() {
         viewModel.swapLanguages()
+        triggerHapticFeedback(type: .light)
     }
 
     @objc private func didTapTranslate() {
         viewModel.translate()
+        triggerHapticFeedback(type: .light)
     }
 }
 
@@ -366,7 +368,7 @@ extension TranslateViewController: UITextViewDelegate {
 extension TranslateViewController: LanguageSelectionDelegate {
     func didSelectLanguage(_ language: Language) {
         guard let button = activeLanguageButton else { return }
-        
+        triggerHapticFeedback(type: .success)
         let newLanguage = language
         
         if newLanguage.name == "Other" {
@@ -403,6 +405,7 @@ extension TranslateViewController {
               !languageName.isEmpty else { return }
         
         let customLanguage = Language(name: languageName, code: languageName, flag: "")
+        triggerHapticFeedback(type: .success)
         self.updateLanguageSelection(for: button, with: customLanguage)
     }
     

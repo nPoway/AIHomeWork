@@ -67,10 +67,12 @@ final class ScanTypeContainerViewController: UIViewController {
     }
     
     @objc private func backTapped() {
+        triggerHapticFeedback(type: .light)
         navController.popViewController(animated: true)
     }
     
     private func addChildVC(_ child: UIViewController) {
+        triggerHapticFeedback(type: .light)
         addChild(child)
         containerView.addSubview(child.view)
         child.view.frame = containerView.bounds

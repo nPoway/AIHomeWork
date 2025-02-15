@@ -217,7 +217,33 @@ extension ExplanationModuleViewController: UITableViewDataSource {
             cell.configureLoadingBubbleForAssistant()
         } else {
             cell.configure(with: message)
+            let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+                        cell.addGestureRecognizer(longPressGesture)
         }
         return cell
     }
+    
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+        
+        guard let cell = gesture.view as? ChatMessageCell,
+              let indexPath = tableView.indexPath(for: cell) else { return }
+        
+        let indexInVisible = viewModel.visibleMessages.count - 1 - indexPath.row
+        let message = viewModel.visibleMessages[indexInVisible]
+        
+        if message.role == "date" || message.isLoading { return }
+        
+        let pasteboard = UIPasteboard.general
+        pasteboard.string = message.content
+        
+        let alert = UIAlertController(title: "Copied", message: "Message copied to clipboard", preferredStyle: .alert)
+        triggerHapticFeedback(type: .success)
+        self.present(alert, animated: true)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            alert.dismiss(animated: true)
+        }
+    }
+
 }
