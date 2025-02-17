@@ -1,6 +1,6 @@
 import Foundation
 
-enum OpenAIError: Error, CustomStringConvertible {
+enum OpenAIError: Error, CustomStringConvertible, Equatable {
     case invalidURL
     case noData
     case emptyResponse

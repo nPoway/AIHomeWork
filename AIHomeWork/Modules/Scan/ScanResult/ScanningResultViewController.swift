@@ -117,6 +117,16 @@ final class ScanningResultViewController: UIViewController {
         setupActions()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        registerForKeyboardNotifications()
+    }
+
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        unregisterForKeyboardNotifications()
+    }
+    
     private func setupNavigationBar() {
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(navigationBar)
@@ -170,7 +180,7 @@ final class ScanningResultViewController: UIViewController {
             
             continueButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             continueButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            continueButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: iphoneWithButton ? -5 : -25),
+            continueButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -5),
             continueButton.heightAnchor.constraint(equalToConstant: 50),
             
             retakeButton.bottomAnchor.constraint(equalTo: continueButton.topAnchor, constant: -10),
@@ -302,5 +312,47 @@ extension ScanningResultViewController: UITextViewDelegate {
         }
         return true
     }
+    
+    private func registerForKeyboardNotifications() {
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(keyboardWillShow(_:)),
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil)
+        NotificationCenter.default.addObserver(self,
+            selector: #selector(keyboardWillHide(_:)),
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil)
+    }
+
+    private func unregisterForKeyboardNotifications() {
+        NotificationCenter.default.removeObserver(self,
+            name: UIResponder.keyboardWillShowNotification,
+            object: nil)
+        NotificationCenter.default.removeObserver(self,
+            name: UIResponder.keyboardWillHideNotification,
+            object: nil)
+    }
+
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        guard
+            let userInfo = notification.userInfo,
+            let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect
+        else { return }
+
+        let keyboardHeight = keyboardFrame.height - view.safeAreaInsets.bottom
+        UIView.animate(withDuration: 0.3) {
+            self.additionalSafeAreaInsets.bottom = keyboardHeight
+            self.view.layoutIfNeeded()
+        }
+    }
+
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        UIView.animate(withDuration: 0.3) {
+            // Reset bottom safe area when keyboard hides
+            self.additionalSafeAreaInsets.bottom = 0
+            self.view.layoutIfNeeded()
+        }
+    }
+
 }
 

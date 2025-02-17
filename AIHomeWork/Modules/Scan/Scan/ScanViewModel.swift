@@ -6,7 +6,7 @@ import Photos
 class ScanViewModel: NSObject {
     
     private let captureSession = AVCaptureSession()
-    private var capturePhotoOutput: AVCapturePhotoOutput!
+    private var capturePhotoOutput: AVCapturePhotoOutput?
     private let cameraService = CameraService()
 
     
@@ -66,8 +66,9 @@ class ScanViewModel: NSObject {
                 }
                 
                 self.capturePhotoOutput = AVCapturePhotoOutput()
-                if self.captureSession.canAddOutput(self.capturePhotoOutput) {
-                    self.captureSession.addOutput(self.capturePhotoOutput)
+                guard let capturePhotoOutput else { return }
+                if self.captureSession.canAddOutput(capturePhotoOutput) {
+                    self.captureSession.addOutput(capturePhotoOutput)
                 }
                 
                 self.captureSession.commitConfiguration()
@@ -95,6 +96,7 @@ class ScanViewModel: NSObject {
     func capturePhoto() {
         let settings = AVCapturePhotoSettings()
         settings.flashMode = .off
+        guard let capturePhotoOutput else { return }
         capturePhotoOutput.capturePhoto(with: settings, delegate: self)
     }
     

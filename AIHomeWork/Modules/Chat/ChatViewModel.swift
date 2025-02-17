@@ -86,6 +86,9 @@ final class ChatViewModel {
                     
                 case .failure(let error as OpenAIError):
                     self?.removeAssistantLoadingMessage()
+                    if error == .inappropriateContent {
+                        self?.messages.removeAll { $0 == userMessage }
+                    }
                     self?.onErrorOccurred?(error.localizedDescription)
                 case .failure(let error):
                     self?.removeAssistantLoadingMessage()
@@ -122,6 +125,9 @@ final class ChatViewModel {
                 case .failure(let error as OpenAIError):
                     let errorMessage = "\(error.localizedDescription)"
                     self?.removeAssistantLoadingMessage()
+                    if error == .inappropriateContent {
+                        self?.messages.removeAll { $0 == userMessage }
+                    }
                     self?.onErrorOccurred?(errorMessage)
                 case .failure(let error):
                     self?.removeAssistantLoadingMessage()

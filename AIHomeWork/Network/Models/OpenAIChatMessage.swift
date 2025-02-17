@@ -1,6 +1,6 @@
 import Foundation
 
-struct OpenAIChatMessage: Codable {
+struct OpenAIChatMessage: Codable, Equatable {
     let role: String
     var content: String
     
