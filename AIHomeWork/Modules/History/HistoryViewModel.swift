@@ -40,7 +40,7 @@ final class HistoryViewModel {
             sessions.remove(at: index)
             onDataUpdated?()
         } catch {
-            print("Ошибка при удалении сессии: \(error)")
+            print("Error in session: \(error)")
         }
     }
 }

@@ -20,7 +20,6 @@ final class LanguageCell: UITableViewCell {
         return view
     }()
     
-    // Констрейнты, которые будем изменять
     private var flagWidthConstraint: NSLayoutConstraint!
     private var flagHeightConstraint: NSLayoutConstraint!
     
@@ -37,7 +36,6 @@ final class LanguageCell: UITableViewCell {
         flagImageView.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        // Первоначальные ограничения для обычных флагов
         flagWidthConstraint = flagImageView.widthAnchor.constraint(equalToConstant: 32)
         flagHeightConstraint = flagImageView.heightAnchor.constraint(equalToConstant: 24)
         
@@ -50,7 +48,7 @@ final class LanguageCell: UITableViewCell {
             
             flagImageView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 15),
             flagImageView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            flagWidthConstraint, // Активируем здесь
+            flagWidthConstraint,
             flagHeightConstraint,
             
             nameLabel.leadingAnchor.constraint(equalTo: flagImageView.trailingAnchor, constant: 15),
@@ -66,7 +64,6 @@ final class LanguageCell: UITableViewCell {
         flagImageView.image = UIImage(named: language.flag)
         nameLabel.text = language.name
         
-        // Проверяем, если это "Other", меняем размер
         if language.code == "other" {
             flagWidthConstraint.constant = 28
             flagHeightConstraint.constant = 24
@@ -74,8 +71,7 @@ final class LanguageCell: UITableViewCell {
             flagWidthConstraint.constant = 32
             flagHeightConstraint.constant = 24
         }
-        
-        // Перерисовываем layout
+       
         layoutIfNeeded()
     }
 }

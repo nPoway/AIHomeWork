@@ -179,7 +179,7 @@ final class ChatMessageCell: UITableViewCell {
             avatarImageView.isHidden = false
             bubbleTrailingConstraint.isActive = false
             bubbleLeadingConstraint.isActive = true
-            bubbleView.backgroundColor = .systemBlue
+            bubbleView.backgroundColor = .customPrimary
             messageLabel.textColor = .white
             applyCustomBubbleMask(corners: [.layerMinXMaxYCorner, .layerMaxXMaxYCorner, .layerMaxXMinYCorner])
             attachedImageTrailingConstraint.isActive = false
@@ -223,7 +223,7 @@ final class ChatMessageCell: UITableViewCell {
         bubbleLeadingConstraint.isActive = true
         loadingBubbleMinHeight.isActive = true
         loadingBubbleMinWidth.isActive = true
-        bubbleView.backgroundColor = .systemBlue
+        bubbleView.backgroundColor = .customPrimary
         messageLabel.textColor = .white
         typingIndicatorView.startAnimating()
         typingIndicatorView.isHidden = false

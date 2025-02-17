@@ -315,17 +315,20 @@ extension ChatViewController: ScanOptionsDelegate {
         triggerHapticFeedback(type: .light)
         coordinator.pushCamera { [weak self] image in
             guard let self = self else { return }
-            
-            let text = messageInputTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            
-            if let base64 = image.jpegBase64 {
-                self.viewModel.userDidSendImageAndText(imageURL: "data:image/jpeg;base64,\(base64)", text: text)
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
                 
-                messageInputTextField.text = ""
-                viewModel.addAssistantLoadingMessage()
-            }
-            else {
-                self.showErrorAlert(message: "Failed to encode image.")
+                let text = self.messageInputTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                
+                if let base64 = image.jpegBase64 {
+                    self.viewModel.userDidSendImageAndText(imageURL: "data:image/jpeg;base64,\(base64)", text: text)
+                    
+                    self.messageInputTextField.text = ""
+                    self.viewModel.addAssistantLoadingMessage()
+                }
+                else {
+                    self.showErrorAlert(message: "Failed to encode image.")
+                }
             }
         }
     }

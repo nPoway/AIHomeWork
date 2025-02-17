@@ -29,5 +29,4 @@ final class DateCell: UITableViewCell {
         dateLabel.text = dateString
     }
     
-    
 }

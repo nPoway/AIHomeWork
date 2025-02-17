@@ -297,7 +297,6 @@ extension OpenAIService {
                 return
             }
             
-            // Проходим по пользовательским сообщениям и проверяем их
             let userMessages = messages.filter { $0.role == "user" }
             let dispatchGroup = DispatchGroup()
             var moderationFailed = false

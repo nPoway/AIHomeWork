@@ -51,7 +51,7 @@ final class HomeView: BlurredGradientView {
             navigationBar.topAnchor.constraint(equalTo: topAnchor),
             navigationBar.leadingAnchor.constraint(equalTo: leadingAnchor),
             navigationBar.trailingAnchor.constraint(equalTo: trailingAnchor),
-            navigationBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 90 : 110), // 110
+            navigationBar.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 90 : 110),
             collectionView.topAnchor.constraint(equalTo: navigationBar.bottomAnchor),
             collectionView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
             collectionView.trailingAnchor.constraint(equalTo: trailingAnchor),

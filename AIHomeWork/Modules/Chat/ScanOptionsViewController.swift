@@ -73,7 +73,6 @@ final class ScanOptionsViewController: UIViewController {
         return view
     }()
     
-    // Затемнение фона
     private let dimmedView: UIView = {
         let view = UIView()
         view.backgroundColor = UIColor.black.withAlphaComponent(0.5)
@@ -87,7 +86,6 @@ final class ScanOptionsViewController: UIViewController {
     }
     
     private func setupUI() {
-        // Задний полупрозрачный фон
         view.addSubview(dimmedView)
         dimmedView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -97,18 +95,15 @@ final class ScanOptionsViewController: UIViewController {
             dimmedView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
         ])
         
-        // Контейнер, в котором всё содержится
         view.addSubview(containerView)
         containerView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            // Располагаем ближе к нижней части экрана
             containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             containerView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             containerView.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 230 : 280)
         ])
         
-        // Заголовок
         containerView.addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -116,7 +111,6 @@ final class ScanOptionsViewController: UIViewController {
             titleLabel.centerXAnchor.constraint(equalTo: containerView.centerXAnchor)
         ])
         
-        // Кнопка закрытия (иконка X)
         containerView.addSubview(closeButton)
         closeButton.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -126,7 +120,6 @@ final class ScanOptionsViewController: UIViewController {
             closeButton.heightAnchor.constraint(equalToConstant: 30)
         ])
         
-        // Линия под заголовком
         containerView.addSubview(topSeparator)
         topSeparator.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -136,7 +129,6 @@ final class ScanOptionsViewController: UIViewController {
             topSeparator.heightAnchor.constraint(equalToConstant: 1)
         ])
         
-        // Стэк из двух кнопок
         let stackView = UIStackView(arrangedSubviews: [cameraButton, galleryButton])
         stackView.axis = .vertical
         stackView.spacing = 12

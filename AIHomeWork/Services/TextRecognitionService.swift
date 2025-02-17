@@ -8,7 +8,10 @@ final class TextRecognitionService {
     @discardableResult
     func recognizeText(
         in image: UIImage,
-        languages: [String] = ["en-US","ru-RU"]
+        languages: [String] = [
+        "en-US", "ru-RU", "es-ES", "fr-FR", "de-DE", "zh-CN", "ja-JP", "ko-KR",
+        "it-IT", "pt-BR", "ar-SA", "hi-IN", "nl-NL", "tr-TR", "sv-SE"
+    ]
     ) async throws -> String {
         
         guard let cgImage = image.cgImage else {
