@@ -162,10 +162,11 @@ final class ChatMessageCell: UITableViewCell {
     
     // MARK: - Configuration
     
-    func configure(with message: OpenAIChatMessage) {
+    func configure(with message: OpenAIChatMessage, tableView: UITableView,
+                   indexPath: IndexPath,
+                   animationDidFinish: (() -> Void)? = nil) {
         typingIndicatorView.stopAnimating()
         typingIndicatorView.isHidden = true
-        messageLabel.text = message.content
         loadingBubbleMinHeight.isActive = false
         loadingBubbleMinWidth.isActive = false
         
@@ -184,12 +185,31 @@ final class ChatMessageCell: UITableViewCell {
             applyCustomBubbleMask(corners: [.layerMinXMaxYCorner, .layerMaxXMaxYCorner, .layerMaxXMinYCorner])
             attachedImageTrailingConstraint.isActive = false
             attachedImageLeadingConstraint.isActive = true
+            if message.isLoading {
+                configureLoadingBubbleForAssistant()
+            }
+            else {
+                if message.needsTypingAnimation {
+                    messageLabel.text = ""
+                    typingIndicatorView.isHidden = true
+                    print("Assistant content:", message.content)
+                    DispatchQueue.main.async {
+                        self.animateTypingEffect(in: tableView, at: indexPath, text: message.content) {
+                            animationDidFinish?()
+                        }
+                    }
+                }
+                else {
+                    messageLabel.text = message.content
+                }
+            }
             
         case "user":
             avatarImageView.isHidden = true
             bubbleLeadingConstraint.isActive = false
             bubbleTrailingConstraint.isActive = true
             bubbleView.backgroundColor = UIColor(white: 0.15, alpha: 1.0)
+            messageLabel.text = message.content
             messageLabel.textColor = .white
             applyCustomBubbleMask(corners: [.layerMinXMaxYCorner, .layerMinXMinYCorner, .layerMaxXMinYCorner])
             attachedImageLeadingConstraint.isActive = false
@@ -215,6 +235,50 @@ final class ChatMessageCell: UITableViewCell {
             bubbleBottomConstraintNoImage.isActive = true
         }
     }
+    
+    private func animateTypingEffect(in tableView: UITableView,
+                                     at indexPath: IndexPath,
+                                     text: String,
+                                     completion: @escaping () -> Void)
+    {
+        guard !text.isEmpty else {
+            completion()
+            return
+        }
+        
+        messageLabel.text = "" // очистка
+        
+        var currentIndex = 0
+        let characters = Array(text)
+
+        let timer = Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true) { [weak self] timer in
+            guard let self = self else {
+                timer.invalidate()
+                return
+            }
+            
+            DispatchQueue.main.async {
+                if currentIndex < characters.count {
+                    self.messageLabel.text?.append(characters[currentIndex])
+                    currentIndex += 1
+                    
+                    UIView.performWithoutAnimation {
+                        tableView.beginUpdates()
+                        tableView.endUpdates()
+                    }
+                    
+                    tableView.scrollToRow(at: indexPath, at: .top, animated: false)
+                } else {
+                    timer.invalidate()
+                    completion()
+                }
+            }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+
+
     
     func configureLoadingBubbleForAssistant() {
         messageLabel.text = ""

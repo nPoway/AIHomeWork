@@ -3,7 +3,6 @@ import PhotosUI
 
  class ChatViewController: UIViewController {
     
-    
     // MARK: - Properties
     
     private let viewModel: ChatViewModel
@@ -236,8 +235,12 @@ extension ChatViewController: UITableViewDataSource {
         cell.transform = CGAffineTransform(scaleX: 1, y: -1)
         if message.isLoading {
             cell.configureLoadingBubbleForAssistant()
-        } else {
-            cell.configure(with: message)
+        }
+        else {
+            cell.configure(with: message, tableView: self.chatTableView, indexPath: indexPath) {
+                self.viewModel.markAnimationFinished(for: message)
+            }
+
             let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
                         cell.addGestureRecognizer(longPressGesture)
         }

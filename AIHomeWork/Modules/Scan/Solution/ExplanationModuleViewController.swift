@@ -216,7 +216,9 @@ extension ExplanationModuleViewController: UITableViewDataSource {
         if message.isLoading {
             cell.configureLoadingBubbleForAssistant()
         } else {
-            cell.configure(with: message)
+            cell.configure(with: message, tableView: self.tableView, indexPath: indexPath) {
+                self.viewModel.markAnimationFinished(for: message)
+            }
             let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
                         cell.addGestureRecognizer(longPressGesture)
         }

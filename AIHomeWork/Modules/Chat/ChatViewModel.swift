@@ -148,10 +148,12 @@ final class ChatViewModel {
         if let lastIndex = messages.lastIndex(where: { $0.role == "assistant" && $0.isLoading }) {
             messages[lastIndex].content = text
             messages[lastIndex].isLoading = false
+            messages[lastIndex].needsTypingAnimation = true
             onMessagesUpdate?()
         }
         else {
             let newMessage = OpenAIChatMessage(role: "assistant", content: text, isLoading: false)
+//            newMessage.needsTypingAnimation = true
             messages.append(newMessage)
             onMessagesUpdate?()
         }
@@ -220,4 +222,11 @@ extension ChatViewModel {
         messages.removeAll()
         onMessagesUpdate?()
     }
+    
+    func markAnimationFinished(for message: OpenAIChatMessage) {
+        if let index = messages.firstIndex(where: { $0.id == message.id }) {
+            messages[index].needsTypingAnimation = false
+        }
+    }
+
 }

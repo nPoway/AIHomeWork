@@ -35,7 +35,8 @@ final class HistoryTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont.plusJakartaSans(.regular, size: 15)
         label.textColor = .white
-        label.numberOfLines = 0
+        label.numberOfLines = 4
+        label.lineBreakMode = .byTruncatingTail
         return label
     }()
     

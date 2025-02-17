@@ -185,7 +185,7 @@
 				DEVELOPMENT_TEAM = KXCQNF7A5K;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIHomeWork/Info.plist;
-				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to scan assignments.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires access to your camera so you can use it to process your images";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to select images";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -219,7 +219,7 @@
 				DEVELOPMENT_TEAM = KXCQNF7A5K;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = AIHomeWork/Info.plist;
-				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to scan assignments.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires access to your camera so you can use it to process your images";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to select images";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;

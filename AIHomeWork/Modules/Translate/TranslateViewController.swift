@@ -243,7 +243,7 @@ final class TranslateViewController: UIViewController {
             translateButton.leadingAnchor.constraint(equalTo: inputTextView.leadingAnchor),
             translateButton.trailingAnchor.constraint(equalTo: inputTextView.trailingAnchor),
             translateButton.heightAnchor.constraint(equalToConstant: 50),
-            translateButton.bottomAnchor.constraint(equalTo: customScrollView.contentLayoutGuide.bottomAnchor, constant: -20) // ЗАКРЕПЛЯЕМ КОНТЕНТ
+            translateButton.bottomAnchor.constraint(equalTo: customScrollView.contentLayoutGuide.bottomAnchor, constant: -20)
         ])
         
         NSLayoutConstraint.activate([
@@ -275,8 +275,9 @@ final class TranslateViewController: UIViewController {
         }
         
         viewModel.onTranslationChanged = { [weak self] translatedText in
-            self?.translationTextView.text = translatedText
-            self?.translationPlaceholderLabel.isHidden = !translatedText.isEmpty
+            guard let self = self else { return }
+            self.translationPlaceholderLabel.isHidden = !translatedText.isEmpty
+            self.animateTypingEffect(text: translatedText)
         }
 
         viewModel.onLanguagesSwapped = { [weak self] in
@@ -309,6 +310,20 @@ final class TranslateViewController: UIViewController {
         swapLanguagesButton.addTarget(self, action: #selector(didTapSwapLanguages), for: .touchUpInside)
         translateButton.addTarget(self, action: #selector(didTapTranslate), for: .touchUpInside)
         navigationBar.backButton.addTarget(self, action: #selector(backTapped), for: .touchUpInside)
+    }
+    
+    private func animateTypingEffect(text: String) {
+        translationTextView.text = ""
+        var currentIndex = 0
+        Timer.scheduledTimer(withTimeInterval: 0.02, repeats: true) { timer in
+            if currentIndex < text.count {
+                let index = text.index(text.startIndex, offsetBy: currentIndex)
+                self.translationTextView.text?.append(text[index])
+                currentIndex += 1
+            } else {
+                timer.invalidate()
+            }
+        }
     }
 
     // MARK: - Actions

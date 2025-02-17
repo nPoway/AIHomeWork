@@ -1,6 +1,7 @@
 import Foundation
 
 struct OpenAIChatMessage: Codable, Equatable {
+    let id = UUID()
     let role: String
     var content: String
     
@@ -9,6 +10,8 @@ struct OpenAIChatMessage: Codable, Equatable {
     var isLoading: Bool = false
     
     var isHidden: Bool = false
+    
+    var needsTypingAnimation: Bool = false
     
     private enum CodingKeys: String, CodingKey {
         case role, content, imageURL

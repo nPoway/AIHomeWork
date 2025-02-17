@@ -28,9 +28,13 @@ class ScanViewModel: NSObject {
         case .notDetermined:
             requestCameraAccess()
         case .denied, .restricted:
-            onCameraPermissionDenied?()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.onCameraPermissionDenied?()
+            }
         @unknown default:
-            onCameraPermissionDenied?()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                self.onCameraPermissionDenied?()
+            }
         }
     }
     
