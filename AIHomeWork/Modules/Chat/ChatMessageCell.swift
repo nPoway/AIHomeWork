@@ -246,7 +246,7 @@ final class ChatMessageCell: UITableViewCell {
             return
         }
         
-        messageLabel.text = "" // очистка
+        messageLabel.text = ""
         
         var currentIndex = 0
         let characters = Array(text)
@@ -261,12 +261,8 @@ final class ChatMessageCell: UITableViewCell {
                 if currentIndex < characters.count {
                     self.messageLabel.text?.append(characters[currentIndex])
                     currentIndex += 1
-                    
-                    UIView.performWithoutAnimation {
-                        tableView.beginUpdates()
-                        tableView.endUpdates()
-                    }
-                    
+                    tableView.beginUpdates()
+                    tableView.endUpdates()
                     tableView.scrollToRow(at: indexPath, at: .top, animated: false)
                 } else {
                     timer.invalidate()

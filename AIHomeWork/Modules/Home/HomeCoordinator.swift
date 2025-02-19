@@ -32,4 +32,10 @@ class HomeCoordinator: Coordinator {
         let chatCoordinator = ChatCoordinator(navigationController: navigationController)
         chatCoordinator.start(with: subject)
     }
+    
+    func showPaywall() {
+        let pw = PaywallTrialController()
+        pw.modalPresentationStyle = .overFullScreen
+        navigationController.present(pw, animated: true)
+    }
 }

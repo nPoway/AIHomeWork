@@ -1,3 +1,5 @@
+import UIKit
+
 class PaywallBottomButton: UIButton {
     init(title: String) {
         super.init(frame: .zero)

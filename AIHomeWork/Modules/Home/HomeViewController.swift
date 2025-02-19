@@ -32,6 +32,7 @@ final class HomeViewController: BaseViewController {
     
     override func setupTargets() {
         homeView.navigationBar.settingsButton.addTarget(self, action: #selector(settingsTapped), for: .touchUpInside)
+        homeView.navigationBar.proButton.addTarget(self, action: #selector(proTapped), for: .touchUpInside)
     }
     
     private func setupDataSource() {
@@ -107,6 +108,11 @@ extension HomeViewController {
     private func chatButtonTapped() {
         coordinator.openChat()
         triggerHapticFeedback(type: .light)
+    }
+    
+    @objc
+    private func proTapped() {
+        coordinator.showPaywall()
     }
     
     @objc

@@ -5,7 +5,8 @@ class AppCoordinator: Coordinator {
     var navigationController = UINavigationController()
     private let window: UIWindow
 
-    @AppStorage("isFirstLaunch") private var isFirstLaunch: Bool = false
+    @AppStorage("isFirstLaunch") private var isFirstLaunch: Bool = true
+    private var onboardingCoordinator: OnboardingCoordinator?
 
     init(window: UIWindow) {
         self.window = window
@@ -23,6 +24,7 @@ class AppCoordinator: Coordinator {
 
     private func showOnboarding() {
         let onboardingCoordinator = OnboardingCoordinator(navigationController: navigationController)
+        self.onboardingCoordinator = onboardingCoordinator
         onboardingCoordinator.start()
         navigationController = onboardingCoordinator.navigationController
         window.rootViewController = navigationController
@@ -30,9 +32,9 @@ class AppCoordinator: Coordinator {
         
         onboardingCoordinator.onFinish = { [weak self] in
             self?.pushTabBar()
+            self?.isFirstLaunch = false
+            self?.onboardingCoordinator = nil
         }
-
-        isFirstLaunch = false
     }
 
     private func pushTabBar() {

@@ -7,7 +7,6 @@ class SubscriptionPlanView: UIControl {
     private let priceLabel = UILabel()
     private let trialLabel = UILabel()
     
-    // MARK: - Градиентный слой
     private let gradientLayer = CAGradientLayer()
     
     private let gradientColors: [CGColor] = [
@@ -16,7 +15,6 @@ class SubscriptionPlanView: UIControl {
         UIColor(hex: "#00328F").cgColor
     ]
     
-    // MARK: - Инициализация
     init(planName: String, priceText: String, trialText: String) {
         super.init(frame: .zero)
         
@@ -57,7 +55,6 @@ class SubscriptionPlanView: UIControl {
         }
     }
     
-    // MARK: - Градиент
     private func setupGradient() {
         gradientLayer.colors = gradientColors
         gradientLayer.startPoint = CGPoint(x: 0.0, y: 0.5)
@@ -71,7 +68,6 @@ class SubscriptionPlanView: UIControl {
         gradientLayer.frame = bounds
     }
     
-    // MARK: - Автолейаут
     private func setupConstraints() {
         NSLayoutConstraint.activate([
             checkImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
@@ -92,7 +88,6 @@ class SubscriptionPlanView: UIControl {
         ])
     }
     
-    // MARK: - Публичный метод для смены текста trial
     func updateTrialText(_ text: String) {
         trialLabel.text = text
     }
@@ -101,7 +96,6 @@ class SubscriptionPlanView: UIControl {
         priceLabel.text = text
     }
     
-    // MARK: - Управление выбором
     override var isSelected: Bool {
         didSet { updateSelectionUI() }
     }
