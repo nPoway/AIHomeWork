@@ -150,6 +150,7 @@ class PaywallViewController: UIViewController {
     
     @objc private func handleContinue() {
         onContinue?()
+        triggerHapticFeedback(type: .selection)
     }
     
     @objc private func handleTextTap(_ gesture: UITapGestureRecognizer) {
@@ -159,6 +160,7 @@ class PaywallViewController: UIViewController {
         
         if NSLocationInRange(textPos, linkRange) {
             onContinue?()
+            triggerHapticFeedback(type: .selection)
         }
     }
     

@@ -97,6 +97,7 @@ class OnboardingStepViewController: UIViewController {
     }
     
     @objc private func handleContinue() {
+        triggerHapticFeedback(type: .light)
         onContinue?()
     }
 }

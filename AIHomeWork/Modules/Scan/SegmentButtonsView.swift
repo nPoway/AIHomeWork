@@ -56,7 +56,6 @@ final class SegmentButtonsView: UIStackView {
         button.imageEdgeInsets = UIEdgeInsets(top: 0, left: -spacing, bottom: 0, right: spacing)
         button.titleEdgeInsets = UIEdgeInsets(top: 0, left: spacing, bottom: 0, right: -spacing)
         
-        // Appearance
         button.layer.cornerRadius = 16
         button.clipsToBounds = true
         button.titleLabel?.font = UIFont.plusJakartaSans(.semiBold, size: 18)
@@ -68,11 +67,13 @@ final class SegmentButtonsView: UIStackView {
     }
 
     
-    @objc private func didTapButton(_ sender: UIButton) {
+    @objc
+    private func didTapButton(_ sender: UIButton) {
         let isScanSelected = (sender == scanButton)
         updateSelectedState(isScan: isScanSelected)
         let selectedIndex = isScanSelected ? 0 : 1
         delegate?.didSelectSegment(selectedIndex)
+        triggerHapticFeedback(type: .selection)
     }
     
     private func updateSelectedState(isScan: Bool) {

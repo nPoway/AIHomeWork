@@ -329,18 +329,22 @@ final class TranslateViewController: UIViewController {
     // MARK: - Actions
     
     private func showErrorAlert(message: String) {
+        
         let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
+        triggerHapticFeedback(type: .error)
         present(alert, animated: true)
     }
     
     @objc private func backTapped() {
+        triggerHapticFeedback(type: .selection)
         coordinator.finish()
         guard !inputTextView.text.isEmpty else { return }
         viewModel.saveChatSession()
     }
     
     @objc private func didTapLanguageButton(_ sender: UIButton) {
+        triggerHapticFeedback(type: .selection)
         activeLanguageButton = sender
         let languageVC = LanguageSelectionViewController()
         languageVC.delegate = self

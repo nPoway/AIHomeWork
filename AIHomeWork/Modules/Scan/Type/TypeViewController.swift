@@ -115,7 +115,8 @@ final class TypeViewController: UIViewController, UITextViewDelegate {
         }
     }
     
-    private func setupKeyboardDismiss() {
+    private
+    func setupKeyboardDismiss() {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
@@ -123,10 +124,13 @@ final class TypeViewController: UIViewController, UITextViewDelegate {
         let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         swipeDown.direction = .down
         view.addGestureRecognizer(swipeDown)
+        triggerHapticFeedback(type: .error)
     }
     
-    @objc private func dismissKeyboard() {
+    @objc
+    private func dismissKeyboard() {
         view.endEditing(true)
+        triggerHapticFeedback(type: .error)
     }
     
     func textViewDidChange(_ textView: UITextView) {

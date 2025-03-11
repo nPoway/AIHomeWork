@@ -138,12 +138,16 @@ class MainTabBarController: UITabBarController {
         historyButton.isSelected = (selectedIndex == 1)
     }
     
-    @objc private func centralButtonTapped() {
+    @objc
+    private func centralButtonTapped() {
         coordinator.pushScanViewController()
+        triggerHapticFeedback(type: .selection)
     }
     
-    @objc private func tabButtonTapped(_ sender: UIButton) {
+    @objc
+    private func tabButtonTapped(_ sender: UIButton) {
         selectedIndex = sender.tag
         updateTabButtonSelection()
+        triggerHapticFeedback(type: .selection)
     }
 }

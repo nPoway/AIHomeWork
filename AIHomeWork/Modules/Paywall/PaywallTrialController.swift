@@ -229,10 +229,12 @@ class PaywallTrialController: UIViewController {
     
     @objc private func handleSubscribe() {
         dismiss(animated: true, completion: nil)
+        triggerHapticFeedback(type: .success)
     }
     
     @objc private func handleClose() {
         dismiss(animated: true, completion: nil)
+        triggerHapticFeedback(type: .selection)
     }
     
     @objc private func handlePlanTap(_ sender: SubscriptionPlanView) {
