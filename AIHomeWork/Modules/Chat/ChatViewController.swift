@@ -182,13 +182,18 @@ import PhotosUI
     }
     
     @objc private func sendButtonTapped() {
-        guard let text = messageInputTextField.text?.trimmingCharacters(in: .whitespaces),
-              !text.isEmpty else { return }
-        viewModel.userDidSendMessage(text)
-        messageInputTextField.text = ""
-        messageInputTextField.resignFirstResponder()
-        viewModel.addAssistantLoadingMessage()
-        triggerHapticFeedback(type: .success)
+        if PaywallService.shared.isPaywallNeeded() {
+            coordinator.presentPaywall()
+        }
+        else {
+            guard let text = messageInputTextField.text?.trimmingCharacters(in: .whitespaces),
+                  !text.isEmpty else { return }
+            viewModel.userDidSendMessage(text)
+            messageInputTextField.text = ""
+            messageInputTextField.resignFirstResponder()
+            viewModel.addAssistantLoadingMessage()
+            triggerHapticFeedback(type: .success)
+        }
     }
     
     // MARK: - Helpers
@@ -303,14 +308,19 @@ extension ChatViewController: UITextFieldDelegate {
 
 extension ChatViewController {
     @objc private func attachmentButtonTapped() {
-        triggerHapticFeedback(type: .light)
-        let scanOptionsVC = ScanOptionsViewController()
-        scanOptionsVC.delegate = self
-        scanOptionsVC.modalPresentationStyle = .overFullScreen
-        present(scanOptionsVC, animated: false)
+        if PaywallService.shared.isPaywallNeeded() {
+            coordinator.presentPaywall()
+        }
+        else {
+            triggerHapticFeedback(type: .light)
+            let scanOptionsVC = ScanOptionsViewController()
+            scanOptionsVC.delegate = self
+            scanOptionsVC.modalPresentationStyle = .overFullScreen
+            present(scanOptionsVC, animated: false)
+        }
     }
-
-    }
+    
+}
     
 
 extension ChatViewController: ScanOptionsDelegate {

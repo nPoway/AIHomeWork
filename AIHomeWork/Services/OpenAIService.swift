@@ -150,6 +150,8 @@ final class OpenAIService: OpenAIServiceProtocol {
         let modelName = hasImage ? "gpt-4o-mini" : body.model
 
         let finalJSON: [String: Any]
+        
+        PaywallService.shared.decrementFreeRequestsLeft()
 
         if hasImage {
             let visionMessages = makeVisionMessages(from: body.messages)

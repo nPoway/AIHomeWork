@@ -1,6 +1,15 @@
 {
-  "originHash" : "2174eaf93f622d57be865cd78b51b72620c12528f1f0957292620977c4d69891",
+  "originHash" : "8a4c2a72c7360434809c8c5508dcbc2af7e200f8853975ec29df5fe832cb6b1c",
   "pins" : [
+    {
+      "identity" : "purchases-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/RevenueCat/purchases-ios",
+      "state" : {
+        "revision" : "84e860c081dc48bda81d5a51514f43218b2f4bf1",
+        "version" : "5.22.1"
+      }
+    },
     {
       "identity" : "realm-core",
       "kind" : "remoteSourceControl",

@@ -1,4 +1,6 @@
 import UIKit
+import RevenueCat
+import RevenueCatUI
 import StoreKit
 
 class OnboardingCoordinator: Coordinator {
@@ -92,11 +94,23 @@ class OnboardingCoordinator: Coordinator {
     }
     
     func showPaywall() {
-        let pw = PaywallViewController()
-        navigationController.pushViewController(pw, animated: true)
-        
-        pw.onContinue = { [weak self] in
-            self?.finish()
+        Purchases.shared.getOfferings { [weak self] offerings, error in
+            guard let self = self else { return }
+            
+            if let offering = offerings?.current {
+                DispatchQueue.main.async {
+                    let paywallVC = PaywallViewController(
+                        offering: offering,
+                        displayCloseButton: false,
+                        shouldBlockTouchEvents: false,
+                        dismissRequestedHandler: { [weak self] _ in
+                            self?.finish()
+                        }
+                    )
+                    paywallVC.modalPresentationStyle = .fullScreen
+                    self.navigationController.pushViewController(paywallVC, animated: true)
+                }
+            }
         }
     }
     

@@ -51,7 +51,7 @@ class OnboardingStepViewController: UIViewController {
         titleLabel.numberOfLines = 0
         
         subtitleLabel.text = subtitleText
-        subtitleLabel.font = UIFont.plusJakartaSans(.regular, size: 19)
+        subtitleLabel.font = UIFont.plusJakartaSans(.regular, size: 18)
         subtitleLabel.textColor = .gray
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
@@ -87,8 +87,8 @@ class OnboardingStepViewController: UIViewController {
             continueButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -5),
             
             subtitleLabel.bottomAnchor.constraint(equalTo: continueButton.topAnchor, constant: -24),
-            subtitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-            subtitleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
+            subtitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
+            subtitleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
           
             titleLabel.bottomAnchor.constraint(equalTo: subtitleLabel.topAnchor, constant: -12),
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 35),

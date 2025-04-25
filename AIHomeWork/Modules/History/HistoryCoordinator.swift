@@ -1,4 +1,6 @@
 import UIKit
+import RevenueCat
+import RevenueCatUI
 
 class HistoryCoordinator: Coordinator {
     var navigationController: UINavigationController
@@ -17,12 +19,43 @@ class HistoryCoordinator: Coordinator {
     }
     
     func showChat(with session: RealmChatSession) {
-        let chatCoordinator = ChatCoordinator(navigationController: navigationController)
-        chatCoordinator.startWithSession(with: session)
+        if PaywallService.shared.isPaywallNeeded() {
+            presentPaywall()
+        }
+        else {
+            let chatCoordinator = ChatCoordinator(navigationController: navigationController)
+            chatCoordinator.startWithSession(with: session)
+        }
     }
     
     func showTranslate(with session: RealmChatSession) {
-        let translateCoordinator = TranslateCoordinator(navigationController: navigationController)
-        translateCoordinator.start(with: session.firstQuestion)
+        if PaywallService.shared.isPaywallNeeded() {
+            presentPaywall()
+        }
+        else {
+            let translateCoordinator = TranslateCoordinator(navigationController: navigationController)
+            translateCoordinator.start(with: session.firstQuestion)
+        }
+    }
+    
+    func presentPaywall() {
+        Purchases.shared.getOfferings { [weak self] offerings, error in
+            guard let self = self else { return }
+            
+            if let offering = offerings?.current {
+                DispatchQueue.main.async {
+                    let paywallVC = PaywallViewController(
+                        offering: offering,
+                        displayCloseButton: false,
+                        shouldBlockTouchEvents: false,
+                        dismissRequestedHandler: { [weak self] controller in
+                            self?.navigationController.dismiss(animated: true)
+                        }
+                    )
+                    paywallVC.modalPresentationStyle = .fullScreen
+                    self.navigationController.present(paywallVC, animated: true)
+                }
+            }
+        }
     }
 }

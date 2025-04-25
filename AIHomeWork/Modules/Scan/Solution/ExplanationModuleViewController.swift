@@ -5,6 +5,7 @@ final class ExplanationModuleViewController: UIViewController {
     // MARK: - Properties
     private let question: String
     private let viewModel: ChatViewModel
+    private let coordinator: ScanCoordinator
     
     private lazy var customNavigationBar: ChatNavigationView = {
         let bar = ChatNavigationView()
@@ -48,9 +49,10 @@ final class ExplanationModuleViewController: UIViewController {
     }()
     
     // MARK: - Init
-    init(question: String, viewModel: ChatViewModel) {
+    init(question: String, viewModel: ChatViewModel, coordinator: ScanCoordinator) {
         self.question = question
         self.viewModel = viewModel
+        self.coordinator = coordinator
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -147,31 +149,35 @@ final class ExplanationModuleViewController: UIViewController {
     
     // MARK: - Actions
     @objc private func getExplanationTapped() {
-        
-        triggerHapticFeedback(type: .success)
-        
-        guard let previousAnswer = viewModel.messages.last(where: { $0.role == "assistant" && !$0.isLoading })?.content else {
-            return
+        if PaywallService.shared.isPaywallNeeded() {
+            coordinator.presentPaywall()
         }
-        
-        viewModel.clearMessagesForExplanation()
-        
-        
-        getExplanationButton.isHidden = true
-        nextTaskButton.isHidden = true
-        tableViewBottomConstraint?.isActive = false
-
-        tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -15)
-        tableViewBottomConstraint?.isActive = true
-
-        self.view.layoutIfNeeded()
-       
-        
-        let explanationPrompt = "Please give detail explanation of your previous answer: \(previousAnswer)"
-        
-        viewModel.userDidSendMessage(explanationPrompt, showInChat: false)
-        customNavigationBar.changeTitle("Explanation")
-        viewModel.addAssistantLoadingMessage()
+        else {
+            triggerHapticFeedback(type: .success)
+            
+            guard let previousAnswer = viewModel.messages.last(where: { $0.role == "assistant" && !$0.isLoading })?.content else {
+                return
+            }
+            
+            viewModel.clearMessagesForExplanation()
+            
+            
+            getExplanationButton.isHidden = true
+            nextTaskButton.isHidden = true
+            tableViewBottomConstraint?.isActive = false
+            
+            tableViewBottomConstraint = tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -15)
+            tableViewBottomConstraint?.isActive = true
+            
+            self.view.layoutIfNeeded()
+            
+            
+            let explanationPrompt = "Please give detail explanation of your previous answer: \(previousAnswer)"
+            
+            viewModel.userDidSendMessage(explanationPrompt, showInChat: false)
+            customNavigationBar.changeTitle("Explanation")
+            viewModel.addAssistantLoadingMessage()
+        }
     }
 
 

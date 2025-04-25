@@ -1,8 +1,27 @@
 import UIKit
+import RevenueCat
+import Combine
+
+private enum PlanID: String {
+    case weekly         = "weekly"
+    case weeklyTrial    = "weekly_trial"
+    case monthly        = "monthly"
+    case monthlyTrial   = "monthly_trial"
+    case annual         = "annual"
+    case annualTrial    = "annual_trial"
+}
 
 class PaywallTrialController: UIViewController {
     
     // MARK: - UI
+    
+    private let paywallService = PaywallService.shared
+    
+    private lazy var planMapping: [SubscriptionPlanView: (base: PlanID, trial: PlanID)] = [
+        planWeek:  (.weekly,  .weeklyTrial),
+        planMonth: (.monthly, .monthlyTrial),
+        planYear:  (.annual,  .annualTrial)
+    ]
     
     private let closeButton: UIButton = {
         let button = UIButton(type: .system)
@@ -24,9 +43,9 @@ class PaywallTrialController: UIViewController {
         return label
     }()
     
-    private let planWeek   = SubscriptionPlanView(planName: "Week",   priceText: "$7.99",  trialText: "Get a Plan")
-    private let planMonth  = SubscriptionPlanView(planName: "Month",  priceText: "$14.99", trialText: "Get a Plan")
-    private let planYear   = SubscriptionPlanView(planName: "Year",   priceText: "$83.99", trialText: "Get a Plan")
+    private let planWeek   = SubscriptionPlanView(planName: "Week",   priceText: "$8.99",  trialText: "Get a Plan")
+    private let planMonth  = SubscriptionPlanView(planName: "Month",  priceText: "$15.99", trialText: "Get a Plan")
+    private let planYear   = SubscriptionPlanView(planName: "Year",   priceText: "$99.99", trialText: "Get a Plan")
     
     private let plansStack: UIStackView = {
         let stack = UIStackView()
@@ -53,7 +72,6 @@ class PaywallTrialController: UIViewController {
         return sw
     }()
     
-    // Кнопка Subscribe
     private let subscribeButton: GradientButton = {
         let button = GradientButton()
         button.setTitle("Subscribe", for: .normal)
@@ -61,12 +79,16 @@ class PaywallTrialController: UIViewController {
         return button
     }()
     
-    // Три кнопки снизу
     private let privacyButton = PaywallBottomButton(title: "Privacy Policy")
     private let restoreButton = PaywallBottomButton(title: "Restore")
     private let termsButton   = PaywallBottomButton(title: "Terms of Use")
     
     private var selectedPlan: SubscriptionPlanView?
+    
+    private var cancellables = Set<AnyCancellable>()
+    
+    private var packages: [String: Package] = [:]
+    private var planPackages: [SubscriptionPlanView: Package] = [:]
     
     // MARK: - Life cycle
     
@@ -83,11 +105,15 @@ class PaywallTrialController: UIViewController {
         setupSubscribeButton()
         setupBottomButtons()
         setupConstraints()
+        fetchPackages()
+        
         trialSwitch.addTarget(self, action: #selector(handleTrialSwitchChange), for: .valueChanged)
         
         subscribeButton.addTarget(self, action: #selector(handleSubscribe), for: .touchUpInside)
-        
+        restoreButton.addTarget(self, action: #selector(handleRestore), for: .touchUpInside)
         closeButton.addTarget(self, action: #selector(handleClose), for: .touchUpInside)
+        privacyButton.addTarget(self, action: #selector(privacyTapped), for: .touchUpInside)
+        termsButton.addTarget(self, action: #selector(termsTapped), for: .touchUpInside)
         
         planWeek.addTarget(self, action: #selector(handlePlanTap(_:)), for: .touchUpInside)
         planMonth.addTarget(self, action: #selector(handlePlanTap(_:)), for: .touchUpInside)
@@ -95,7 +121,50 @@ class PaywallTrialController: UIViewController {
         
         selectPlan(planWeek)
     }
-   
+    
+    @objc
+    private func privacyTapped() {
+        if let url = URL(string: "https://www.freeprivacypolicy.com/live/5fdd7d4a-ee18-4460-a13f-cd7d06eab6a9") {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    @objc
+    private func termsTapped() {
+        if let url = URL(string: "https://www.freeprivacypolicy.com/live/3800f35a-2ef3-48e5-a7d9-f6974d7eff2a") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    private func fetchPackages() {
+        Task {
+            do {
+                let fetched = try await paywallService.offerings()
+                await MainActor.run { self.configurePackages(fetched) }
+            } catch {
+                print("[Paywall] Offerings error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func configurePackages(_ fetched: [Package]) {
+        packages = Dictionary(uniqueKeysWithValues: fetched.map { ($0.identifier, $0) })
+        updatePlansUI(trialEnabled: trialSwitch.isOn)
+        selectPlan(planWeek)
+    }
+    
+    private func updatePlansUI(trialEnabled: Bool) {
+            trialLabel.text = trialEnabled ? "Free Trial Enabled" : "Free Trial Disabled"
+            planPackages.removeAll()
+
+            for (view, ids) in planMapping {
+                let targetID = (trialEnabled ? ids.trial : ids.base).rawValue
+                guard let package = packages[targetID] else { continue }
+                planPackages[view] = package
+                view.updatePrice(package.storeProduct.localizedPriceString)
+                view.updateTrialText(trialEnabled ? "3-days Free Trial" : "Get a Plan")
+            }
+        }
     
     private func setupBackground() {
         backgroundImageView.image = UIImage(named: "paywall_trial")
@@ -159,7 +228,6 @@ class PaywallTrialController: UIViewController {
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            // Фон
             backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
             backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
@@ -207,29 +275,63 @@ class PaywallTrialController: UIViewController {
     
     // MARK: - Actions
     
-    @objc
-    private func handleTrialSwitchChange() {
-        if trialSwitch.isOn {
-            trialLabel.text = "Free Trial Enabled"
-            planWeek.updateTrialText("3-days Free Trial")
-            planMonth.updateTrialText("3-days Free Trial")
-            planMonth.updatePrice("$15.99")
-            planYear.updateTrialText("3-days Free Trial")
-            planYear.updatePrice("$99.99")
-        } else {
-            trialLabel.text = "Free Trial Disabled"
-            
-            planWeek.updateTrialText("Get a Plan")
-            planMonth.updateTrialText("Get a Plan")
-            planMonth.updatePrice("$14.99")
-            planYear.updateTrialText("Get a Plan")
-            planYear.updatePrice("$83.99")
-        }
+    @objc private func handleTrialSwitchChange() {
+        updatePlansUI(trialEnabled: trialSwitch.isOn)
     }
     
     @objc private func handleSubscribe() {
-        dismiss(animated: true, completion: nil)
-        triggerHapticFeedback(type: .success)
+        
+        guard let plan = selectedPlan else { return }
+        guard let package = planPackages[plan] else { return }
+        
+        subscribeButton.isEnabled = false
+        Task {
+            do {
+                let success = try await paywallService.purchase(package)
+                await MainActor.run { [weak self] in
+                    guard let self else { return }
+                    self.subscribeButton.isEnabled = true
+                    print("Is premium after purchase: \(paywallService.isPremium)")
+                    if success, paywallService.isPremium {
+                        
+                        dismiss(animated: true)
+                    }
+                }
+            }
+            catch {
+                await MainActor.run { [weak self] in
+                    self?.subscribeButton.isEnabled = true
+                    self?.presentAlert(title: "Purchase failed", message: error.localizedDescription)
+                }
+            }
+        }
+    }
+    
+    @objc private func handleRestore() {
+        restoreButton.isEnabled = false
+        Task {
+            do {
+                try await paywallService.restore()
+                await MainActor.run {
+                    [weak self] in
+                    guard let self else { return }
+                    restoreButton.isEnabled = true
+                    if paywallService.isPremium {
+                        dismiss(animated: true)
+                    }
+                }
+            } catch {
+                await MainActor.run { [weak self] in
+                    self?.restoreButton.isEnabled = true
+                    self?.presentAlert(title: "Restore failed", message: error.localizedDescription)
+                }
+            }
+        }
+    }
+    private func presentAlert(title: String, message: String) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "OK", style: .default))
+        present(alert, animated: true)
     }
     
     @objc private func handleClose() {

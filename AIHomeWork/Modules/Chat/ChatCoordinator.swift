@@ -1,4 +1,6 @@
 import UIKit
+import RevenueCat
+import RevenueCatUI
 
 final class ChatCoordinator: Coordinator {
     func start() {
@@ -33,5 +35,26 @@ final class ChatCoordinator: Coordinator {
         let chatVC = ChatViewController(viewModel: viewModel, coordinator: self, session: session)
         navigationController.pushViewController(chatVC, animated: true)
         chatVC.sendSavedMessage()
+    }
+    
+    func presentPaywall() {
+        Purchases.shared.getOfferings { [weak self] offerings, error in
+            guard let self = self else { return }
+            
+            if let offering = offerings?.current {
+                DispatchQueue.main.async {
+                    let paywallVC = PaywallViewController(
+                        offering: offering,
+                        displayCloseButton: false,
+                        shouldBlockTouchEvents: false,
+                        dismissRequestedHandler: { [weak self] controller in
+                            self?.navigationController.dismiss(animated: true)
+                        }
+                    )
+                    paywallVC.modalPresentationStyle = .fullScreen
+                    self.navigationController.present(paywallVC, animated: true)
+                }
+            }
+        }
     }
 }

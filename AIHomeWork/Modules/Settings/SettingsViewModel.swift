@@ -21,13 +21,13 @@ final class SettingsViewModel {
     ]
     
     private func openTermsOfUse() {
-        if let url = URL(string: "https://policies.google.com/terms") {
+        if let url = URL(string: "https://www.freeprivacypolicy.com/live/3800f35a-2ef3-48e5-a7d9-f6974d7eff2a") {
             openURL?(url)
         }
     }
     
     private func openPrivacyPolicy() {
-        if let url = URL(string: "https://policies.google.com/privacy") {
+        if let url = URL(string: "https://www.freeprivacypolicy.com/live/5fdd7d4a-ee18-4460-a13f-cd7d06eab6a9") {
             openURL?(url)
         }
     }
@@ -38,7 +38,7 @@ final class SettingsViewModel {
     
     private func shareApp() {
         let text = "🚀 AI Homework – Your smart study buddy! 📚✨ Ace your assignments with AI-powered help. Try it now!"
-        let url = URL(string: "https://apps.apple.com/app/idYOUR_APP_ID")!
+        let url = URL(string: "https://apps.apple.com/app/id6745099629")!
         let activityVC = UIActivityViewController(activityItems: [text, url], applicationActivities: nil)
         
         presentActivity?(activityVC)

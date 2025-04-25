@@ -1,5 +1,7 @@
 import UIKit
 import SwiftUI
+import RevenueCat
+import RevenueCatUI
 
 class AppCoordinator: Coordinator {
     var navigationController = UINavigationController()
@@ -13,6 +15,16 @@ class AppCoordinator: Coordinator {
     }
     
     func start() {
+        let into = IntroScreenController()
+        window.rootViewController = into
+        window.makeKeyAndVisible()
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: { [weak self] in
+            self?.startAfterLaunch()
+        })
+    }
+    
+    func startAfterLaunch() {
         if isFirstLaunch {
             showOnboarding()
         } else {
@@ -48,4 +60,31 @@ class AppCoordinator: Coordinator {
         window.makeKeyAndVisible()
     }
     
+}
+
+
+extension AppCoordinator {
+    func showPaywall() {
+        if !isFirstLaunch && !PaywallService.shared.isPremium {
+            Purchases.shared.getOfferings { [weak self] offerings, error in
+                guard let self = self else { return }
+                
+                if let offering = offerings?.current {
+                    DispatchQueue.main.async {
+                        let paywallVC = PaywallViewController(
+                           offering: offering,
+                           displayCloseButton: false,
+                           shouldBlockTouchEvents: false,
+                           dismissRequestedHandler: { [weak self] controller in
+                               self?.navigationController.dismiss(animated: true)
+                           }
+                        )
+                        paywallVC.modalPresentationStyle = .fullScreen
+                        self.navigationController.present(paywallVC, animated: true)
+                    }
+                }
+            }
+        }
+       
+   }
 }

@@ -3,7 +3,7 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-    var appCoordinator: Coordinator?
+    var appCoordinator: AppCoordinator?
 
 
     func scene(
@@ -22,12 +22,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     func sceneDidDisconnect(_ scene: UIScene) {}
 
-    func sceneDidBecomeActive(_ scene: UIScene) {}
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        appCoordinator?.showPaywall()
+    }
 
     func sceneWillResignActive(_ scene: UIScene) {}
 
     func sceneWillEnterForeground(_ scene: UIScene) {}
 
-    func sceneDidEnterBackground(_ scene: UIScene) {}
+    func sceneDidEnterBackground(_ scene: UIScene) {
+        
+    }
 }
 

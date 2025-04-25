@@ -1,4 +1,6 @@
 import UIKit
+import RevenueCat
+import RevenueCatUI
 
 final class ScanCoordinator: Coordinator {
     
@@ -52,10 +54,31 @@ final class ScanCoordinator: Coordinator {
     }
     
     func showSolution(with text: String) {
-        let explanationModuleViewController = ExplanationModuleViewController(question: text, viewModel: ChatViewModel(openAIService: OpenAIService(), isInitMessageVisible: false))
+        let explanationModuleViewController = ExplanationModuleViewController(question: text, viewModel: ChatViewModel(openAIService: OpenAIService(), isInitMessageVisible: false), coordinator: self)
         explanationModuleViewController.modalPresentationStyle = .fullScreen
         navigationController.present(explanationModuleViewController, animated: true) {
             self.navigationController.popViewController(animated: false)
+        }
+    }
+    
+    func presentPaywall() {
+        Purchases.shared.getOfferings { [weak self] offerings, error in
+            guard let self = self else { return }
+            
+            if let offering = offerings?.current {
+                DispatchQueue.main.async {
+                    let paywallVC = PaywallViewController(
+                        offering: offering,
+                        displayCloseButton: false,
+                        shouldBlockTouchEvents: false,
+                        dismissRequestedHandler: { [weak self] controller in
+                            self?.navigationController.dismiss(animated: true)
+                        }
+                    )
+                    paywallVC.modalPresentationStyle = .fullScreen
+                    self.navigationController.present(paywallVC, animated: true)
+                }
+            }
         }
     }
 }
