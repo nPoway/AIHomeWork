@@ -29,7 +29,7 @@ class GradientButton: UIButton {
         
         layer.insertSublayer(gradientLayer, at: 0)
         
-        layer.cornerRadius = 22
+        layer.cornerRadius = 30
         clipsToBounds = true
         
         setTitleColor(.white, for: .normal)

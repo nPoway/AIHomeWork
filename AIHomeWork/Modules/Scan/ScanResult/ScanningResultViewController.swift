@@ -229,9 +229,10 @@ final class ScanningResultViewController: UIViewController {
         coordinator.dismissScanningResult()
     }
     
-    @objc private func continueTapped() {
+    @objc
+    private func continueTapped() {
         if let recognizedText = recognizedText {
-            coordinator.showSolution(with: recognizedText)
+            coordinator.showSolution(with: recognizedTextView.text)
             triggerHapticFeedback(type: .success)
         }
         else {
@@ -348,7 +349,6 @@ extension ScanningResultViewController: UITextViewDelegate {
 
     @objc private func keyboardWillHide(_ notification: Notification) {
         UIView.animate(withDuration: 0.3) {
-            // Reset bottom safe area when keyboard hides
             self.additionalSafeAreaInsets.bottom = 0
             self.view.layoutIfNeeded()
         }

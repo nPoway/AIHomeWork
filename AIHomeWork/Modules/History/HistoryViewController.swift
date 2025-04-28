@@ -142,6 +142,7 @@ extension HistoryViewController: UITableViewDelegate {
         let session = viewModel.sessions[indexPath.row]
         if session.subject == "Translate" {
             coordinator.showTranslate(with: session)
+            guard !PaywallService.shared.isPaywallNeeded() else { return }
             viewModel.deleteSession(at: indexPath.row)
             triggerHapticFeedback(type: .light)
         }

@@ -38,7 +38,6 @@ final class ScanCoordinator: Coordinator {
     
     func finishWithImage(_ image: UIImage) {
         onImageScanned?(image)
-        finish()
     }
     
     func dismissScanningResult() {

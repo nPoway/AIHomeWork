@@ -5,7 +5,7 @@ import RevenueCat
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        Purchases.logLevel = .error
+        Purchases.logLevel = .info
         Purchases.configure(withAPIKey: "appl_TiqIGusKEpzaadyxtgrBPqstLvj")
         return true
     }

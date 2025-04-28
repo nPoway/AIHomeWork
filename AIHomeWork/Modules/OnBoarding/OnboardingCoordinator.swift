@@ -8,6 +8,8 @@ class OnboardingCoordinator: Coordinator {
     var navigationController: UINavigationController
     var onFinish: (() -> Void)?
     
+    private var paywallVC: PaywallViewController?
+    
     init(navigationController: UINavigationController) {
         self.navigationController = navigationController
     }
@@ -16,6 +18,9 @@ class OnboardingCoordinator: Coordinator {
         let step1 = makeStep1()
         navigationController.pushViewController(step1, animated: true)
         navigationController.navigationBar.isHidden = true
+        DispatchQueue.main.async {
+            self.preloadPaywall()
+        }
     }
     
     func finish() {
@@ -94,6 +99,11 @@ class OnboardingCoordinator: Coordinator {
     }
     
     func showPaywall() {
+        guard let paywallVC else { return }
+        navigationController.pushViewController(paywallVC, animated: true)
+    }
+    
+    func preloadPaywall() {
         Purchases.shared.getOfferings { [weak self] offerings, error in
             guard let self = self else { return }
             
@@ -108,7 +118,7 @@ class OnboardingCoordinator: Coordinator {
                         }
                     )
                     paywallVC.modalPresentationStyle = .fullScreen
-                    self.navigationController.pushViewController(paywallVC, animated: true)
+                    self.paywallVC = paywallVC
                 }
             }
         }

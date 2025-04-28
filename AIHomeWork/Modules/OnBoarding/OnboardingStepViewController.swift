@@ -51,8 +51,8 @@ class OnboardingStepViewController: UIViewController {
         titleLabel.numberOfLines = 0
         
         subtitleLabel.text = subtitleText
-        subtitleLabel.font = UIFont.plusJakartaSans(.regular, size: 18)
-        subtitleLabel.textColor = .gray
+        subtitleLabel.font = UIFont.plusJakartaSans(.regular, size: 17)
+        subtitleLabel.textColor = UIColor("#d7dfe8")?.withAlphaComponent(0.6)
         subtitleLabel.textAlignment = .center
         subtitleLabel.numberOfLines = 0
     
@@ -80,17 +80,17 @@ class OnboardingStepViewController: UIViewController {
             backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             
-            continueButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            continueButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -35),
             continueButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             continueButton.heightAnchor.constraint(equalToConstant: 60),
-            continueButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 5),
-            continueButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -5),
+            continueButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            continueButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            subtitleLabel.bottomAnchor.constraint(equalTo: continueButton.topAnchor, constant: -24),
+            subtitleLabel.bottomAnchor.constraint(equalTo: continueButton.topAnchor, constant: -16),
             subtitleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 8),
             subtitleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
           
-            titleLabel.bottomAnchor.constraint(equalTo: subtitleLabel.topAnchor, constant: -12),
+            titleLabel.bottomAnchor.constraint(equalTo: subtitleLabel.topAnchor, constant: -2),
             titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 35),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -35)
         ])

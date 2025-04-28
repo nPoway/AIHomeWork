@@ -363,8 +363,13 @@ final class TranslateViewController: UIViewController {
     }
 
     @objc private func didTapTranslate() {
-        viewModel.translate()
-        triggerHapticFeedback(type: .light)
+        if PaywallService.shared.isPaywallNeeded() {
+            coordinator.presentPaywall()
+        }
+        else {
+            viewModel.translate()
+            triggerHapticFeedback(type: .light)
+        }
     }
 }
 

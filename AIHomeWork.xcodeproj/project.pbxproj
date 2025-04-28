@@ -194,6 +194,7 @@
 				INFOPLIST_FILE = AIHomeWork/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires access to your camera so you can use it to process your images";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to select images";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "We use your data to provide better advertising and analytics experiences.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -228,6 +229,7 @@
 				INFOPLIST_FILE = AIHomeWork/Info.plist;
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app requires access to your camera so you can use it to process your images";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "We need access to your photo library to select images";
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "We use your data to provide better advertising and analytics experiences.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

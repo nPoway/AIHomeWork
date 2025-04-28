@@ -1,4 +1,6 @@
 import UIKit
+import RevenueCat
+import RevenueCatUI
 
 class TranslateCoordinator: Coordinator {
     var navigationController: UINavigationController
@@ -26,5 +28,24 @@ class TranslateCoordinator: Coordinator {
         return vc
     }
     
-    
+    func presentPaywall() {
+        Purchases.shared.getOfferings { [weak self] offerings, error in
+            guard let self = self else { return }
+            
+            if let offering = offerings?.current {
+                DispatchQueue.main.async {
+                    let paywallVC = PaywallViewController(
+                        offering: offering,
+                        displayCloseButton: false,
+                        shouldBlockTouchEvents: false,
+                        dismissRequestedHandler: { [weak self] controller in
+                            self?.navigationController.dismiss(animated: true)
+                        }
+                    )
+                    paywallVC.modalPresentationStyle = .fullScreen
+                    self.navigationController.present(paywallVC, animated: true)
+                }
+            }
+        }
+    }
 }

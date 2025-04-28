@@ -2,6 +2,8 @@ import UIKit
 import SwiftUI
 import RevenueCat
 import RevenueCatUI
+import AdSupport
+import AppTrackingTransparency
 
 class AppCoordinator: Coordinator {
     var navigationController = UINavigationController()
@@ -25,6 +27,7 @@ class AppCoordinator: Coordinator {
     }
     
     func startAfterLaunch() {
+        requestATT()
         if isFirstLaunch {
             showOnboarding()
         } else {
@@ -72,12 +75,12 @@ extension AppCoordinator {
                 if let offering = offerings?.current {
                     DispatchQueue.main.async {
                         let paywallVC = PaywallViewController(
-                           offering: offering,
-                           displayCloseButton: false,
-                           shouldBlockTouchEvents: false,
-                           dismissRequestedHandler: { [weak self] controller in
-                               self?.navigationController.dismiss(animated: true)
-                           }
+                            offering: offering,
+                            displayCloseButton: false,
+                            shouldBlockTouchEvents: false,
+                            dismissRequestedHandler: { [weak self] controller in
+                                self?.navigationController.dismiss(animated: true)
+                            }
                         )
                         paywallVC.modalPresentationStyle = .fullScreen
                         self.navigationController.present(paywallVC, animated: true)
@@ -85,6 +88,13 @@ extension AppCoordinator {
                 }
             }
         }
-       
-   }
+        
+    }
+    func requestATT() {
+        if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                ATTrackingManager.requestTrackingAuthorization { _ in }
+            }
+        }
+    }
 }

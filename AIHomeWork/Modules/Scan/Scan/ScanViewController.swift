@@ -76,8 +76,13 @@ class ScanViewController: UIViewController {
     
     @objc
     private func capturePhoto() {
-        triggerHapticFeedback(type: .selection)
-        viewModel.capturePhoto()
+        if PaywallService.shared.isPaywallNeeded() {
+            coordinator.presentPaywall()
+        }
+        else {
+            triggerHapticFeedback(type: .selection)
+            viewModel.capturePhoto()
+        }
     }
     
     @objc
