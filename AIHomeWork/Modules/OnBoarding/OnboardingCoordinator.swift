@@ -99,7 +99,10 @@ class OnboardingCoordinator: Coordinator {
     }
     
     func showPaywall() {
-        guard let paywallVC else { return }
+        guard let paywallVC else {
+            preloadPaywall()
+            return
+        }
         navigationController.pushViewController(paywallVC, animated: true)
     }
     

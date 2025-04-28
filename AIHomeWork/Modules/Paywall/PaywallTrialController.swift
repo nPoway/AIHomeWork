@@ -123,29 +123,7 @@ class PaywallTrialController: UIViewController {
         super.viewDidLoad()
         
         view.backgroundColor = .black
-        
-        // 1. Scroll container
-            view.addSubview(scrollView)
-            scrollView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                scrollView.topAnchor.constraint(equalTo: view.topAnchor),
-                scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-            ])
-
-            // 2. Inner content holder
-            scrollView.addSubview(contentView)
-            contentView.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
-                contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
-                contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
-                contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
-
-                contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
-            ])
-        
+        configureScroll()
         setupBackground()
         setupLogo()
         setupList()
@@ -173,23 +151,56 @@ class PaywallTrialController: UIViewController {
         selectPlan(planWeek)
     }
     
+    private func configureScroll() {
+            view.addSubview(scrollView)
+            scrollView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+                scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+
+            scrollView.addSubview(contentView)
+            contentView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+                contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+                contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+                contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+
+                contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
+            ])
+        }
+    
     
     
     private func setupBackground() {
         backgroundImageView.image = UIImage(named: "paywall_trial")
         backgroundImageView.contentMode = .scaleAspectFill
         
-        view.addSubview(backgroundImageView)
+        contentView.addSubview(backgroundImageView)
         backgroundImageView.translatesAutoresizingMaskIntoConstraints = false
+        
+        if iphoneWithButton {
+            NSLayoutConstraint.activate([
+                backgroundImageView.heightAnchor.constraint(equalToConstant: 780)
+                ])
+        }
+        else {
+            NSLayoutConstraint.activate([
+                backgroundImageView.heightAnchor.constraint(equalToConstant: screenSize.height)
+            ])
+        }
     }
     
     private func setupCloseButton() {
-        view.addSubview(closeButton)
+        contentView.addSubview(closeButton)
         closeButton.translatesAutoresizingMaskIntoConstraints = false
     }
     
     private func setupTitleLabel() {
-        view.addSubview(titleLabel)
+        contentView.addSubview(titleLabel)
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
     }
     
@@ -198,7 +209,7 @@ class PaywallTrialController: UIViewController {
         plansStack.addArrangedSubview(planMonth)
         plansStack.addArrangedSubview(planYear)
         
-        view.addSubview(plansStack)
+        contentView.addSubview(plansStack)
         plansStack.translatesAutoresizingMaskIntoConstraints = false
     }
     
@@ -212,21 +223,21 @@ class PaywallTrialController: UIViewController {
         trialContainer.backgroundColor = UIColor.white.withAlphaComponent(0.1)
         trialContainer.layer.cornerRadius = 20
         
-        view.addSubview(trialContainer)
+        contentView.addSubview(trialContainer)
         NSLayoutConstraint.activate([
             trialContainer.heightAnchor.constraint(equalToConstant: 60)
         ])
     }
     
     private func setupSubscribeButton() {
-        view.addSubview(subscribeButton)
+        contentView.addSubview(subscribeButton)
         subscribeButton.translatesAutoresizingMaskIntoConstraints = false
     }
     
     private func setupBottomButtons() {
-        view.addSubview(privacyButton)
-        view.addSubview(restoreButton)
-        view.addSubview(termsButton)
+        contentView.addSubview(privacyButton)
+        contentView.addSubview(restoreButton)
+        contentView.addSubview(termsButton)
         
         privacyButton.translatesAutoresizingMaskIntoConstraints = false
         restoreButton.translatesAutoresizingMaskIntoConstraints = false
@@ -234,49 +245,50 @@ class PaywallTrialController: UIViewController {
     }
     
     private func setupLogo() {
-        view.addSubview(logoImageView)
+        contentView.addSubview(logoImageView)
         logoImageView.translatesAutoresizingMaskIntoConstraints = false
     }
     
     private func setupList() {
-        view.addSubview(benefitsView)
+        contentView.addSubview(benefitsView)
         benefitsView.translatesAutoresizingMaskIntoConstraints = false
     }
     
     // MARK: - Constraints
     
     private func setupConstraints() {
+        print(screenSize.height)
         NSLayoutConstraint.activate([
-            backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
-            backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            backgroundImageView.topAnchor.constraint(equalTo: contentView.topAnchor),
+            backgroundImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            backgroundImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            backgroundImageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             
-            closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
-            closeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            closeButton.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: 8),
+            closeButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             closeButton.widthAnchor.constraint(equalToConstant: 20),
             closeButton.heightAnchor.constraint(equalToConstant: 20),
             
-            logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            logoImageView.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 50 : 160),
-            logoImageView.widthAnchor.constraint(equalToConstant: iphoneWithButton ? 50 : 160),
+            logoImageView.topAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.topAnchor, constant: screenSize.height > 900 ? 40 : 0),
+            logoImageView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            logoImageView.heightAnchor.constraint(equalToConstant: 160),
+            logoImageView.widthAnchor.constraint(equalToConstant: 160),
             
             titleLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor),
-            titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 24),
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -24),
+            titleLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: contentView.leadingAnchor, constant: 24),
+            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -24),
             
             benefitsView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
-            benefitsView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            benefitsView.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             
             plansStack.topAnchor.constraint(equalTo: benefitsView.bottomAnchor, constant: 16),
-            plansStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            plansStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            plansStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            plansStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
             trialContainer.topAnchor.constraint(equalTo: plansStack.bottomAnchor, constant: 5),
-            trialContainer.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            trialContainer.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            trialContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            trialContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
             trialLabel.leadingAnchor.constraint(equalTo: trialContainer.leadingAnchor, constant: 15),
             trialLabel.centerYAnchor.constraint(equalTo: trialContainer.centerYAnchor),
@@ -284,13 +296,14 @@ class PaywallTrialController: UIViewController {
             trialSwitch.trailingAnchor.constraint(equalTo: trialContainer.trailingAnchor, constant: -12),
             trialSwitch.centerYAnchor.constraint(equalTo: trialContainer.centerYAnchor),
             
-            subscribeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            subscribeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            subscribeButton.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
+            subscribeButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            subscribeButton.topAnchor.constraint(greaterThanOrEqualTo: trialContainer.bottomAnchor, constant: 16),
             subscribeButton.heightAnchor.constraint(equalToConstant: 60),
             subscribeButton.bottomAnchor.constraint(equalTo: restoreButton.topAnchor, constant: -5),
             
-            restoreButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            restoreButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            restoreButton.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            restoreButton.bottomAnchor.constraint(equalTo: contentView.safeAreaLayoutGuide.bottomAnchor, constant: -10),
             
             privacyButton.centerYAnchor.constraint(equalTo: restoreButton.centerYAnchor),
             privacyButton.trailingAnchor.constraint(equalTo: restoreButton.leadingAnchor, constant: -50),
