@@ -31,6 +31,27 @@ class PaywallTrialController: UIViewController {
         return button
     }()
     
+    let benefitsView: BulletListView = {
+        let benefitsView = BulletListView(
+            lines: [
+                "Unlimited solution requests",
+                "Advanced multi-tasking helper",
+                "Exclusive tools for various problems",
+                "Round-the-clock problem solver"
+            ]
+        )
+        benefitsView.translatesAutoresizingMaskIntoConstraints = false
+        return benefitsView
+    }()
+    
+    let logoImageView: UIImageView = {
+        let imageView = UIImageView(image: UIImage.logo)
+        imageView.contentMode = .scaleToFill
+        imageView.layer.cornerRadius = 30
+        imageView.clipsToBounds = true
+        return imageView
+    }()
+    
     private let backgroundImageView = UIImageView()
     
     private let titleLabel: UILabel = {
@@ -90,6 +111,12 @@ class PaywallTrialController: UIViewController {
     private var packages: [String: Package] = [:]
     private var planPackages: [SubscriptionPlanView: Package] = [:]
     
+    private let scrollView  = UIScrollView()
+    private let contentView = UIView()
+    
+    
+
+    
     // MARK: - Life cycle
     
     override func viewDidLoad() {
@@ -97,7 +124,31 @@ class PaywallTrialController: UIViewController {
         
         view.backgroundColor = .black
         
+        // 1. Scroll container
+            view.addSubview(scrollView)
+            scrollView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+                scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+
+            // 2. Inner content holder
+            scrollView.addSubview(contentView)
+            contentView.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                contentView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+                contentView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+                contentView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+                contentView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+
+                contentView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor)
+            ])
+        
         setupBackground()
+        setupLogo()
+        setupList()
         setupCloseButton()
         setupTitleLabel()
         setupPlans()
@@ -122,49 +173,7 @@ class PaywallTrialController: UIViewController {
         selectPlan(planWeek)
     }
     
-    @objc
-    private func privacyTapped() {
-        if let url = URL(string: "https://www.freeprivacypolicy.com/live/5fdd7d4a-ee18-4460-a13f-cd7d06eab6a9") {
-            UIApplication.shared.open(url)
-        }
-    }
     
-    @objc
-    private func termsTapped() {
-        if let url = URL(string: "https://www.freeprivacypolicy.com/live/3800f35a-2ef3-48e5-a7d9-f6974d7eff2a") {
-            UIApplication.shared.open(url)
-        }
-    }
-
-    private func fetchPackages() {
-        Task {
-            do {
-                let fetched = try await paywallService.offerings()
-                await MainActor.run { self.configurePackages(fetched) }
-            } catch {
-                print("[Paywall] Offerings error: \(error.localizedDescription)")
-            }
-        }
-    }
-    
-    private func configurePackages(_ fetched: [Package]) {
-        packages = Dictionary(uniqueKeysWithValues: fetched.map { ($0.identifier, $0) })
-        updatePlansUI(trialEnabled: trialSwitch.isOn)
-        selectPlan(planWeek)
-    }
-    
-    private func updatePlansUI(trialEnabled: Bool) {
-            trialLabel.text = trialEnabled ? "Free Trial Enabled" : "Free Trial Disabled"
-            planPackages.removeAll()
-
-            for (view, ids) in planMapping {
-                let targetID = (trialEnabled ? ids.trial : ids.base).rawValue
-                guard let package = packages[targetID] else { continue }
-                planPackages[view] = package
-                view.updatePrice(package.storeProduct.localizedPriceString)
-                view.updateTrialText(trialEnabled ? "3-days Free Trial" : "Get a Plan")
-            }
-        }
     
     private func setupBackground() {
         backgroundImageView.image = UIImage(named: "paywall_trial")
@@ -224,6 +233,16 @@ class PaywallTrialController: UIViewController {
         termsButton.translatesAutoresizingMaskIntoConstraints = false
     }
     
+    private func setupLogo() {
+        view.addSubview(logoImageView)
+        logoImageView.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
+    private func setupList() {
+        view.addSubview(benefitsView)
+        benefitsView.translatesAutoresizingMaskIntoConstraints = false
+    }
+    
     // MARK: - Constraints
     
     private func setupConstraints() {
@@ -238,12 +257,20 @@ class PaywallTrialController: UIViewController {
             closeButton.widthAnchor.constraint(equalToConstant: 20),
             closeButton.heightAnchor.constraint(equalToConstant: 20),
             
-            titleLabel.topAnchor.constraint(equalTo: view.centerYAnchor, constant: iphoneWithButton ? -150 : -110),
+            logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            logoImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            logoImageView.heightAnchor.constraint(equalToConstant: iphoneWithButton ? 50 : 160),
+            logoImageView.widthAnchor.constraint(equalToConstant: iphoneWithButton ? 50 : 160),
+            
+            titleLabel.topAnchor.constraint(equalTo: logoImageView.bottomAnchor),
             titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             titleLabel.leadingAnchor.constraint(greaterThanOrEqualTo: view.leadingAnchor, constant: 24),
             titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: view.trailingAnchor, constant: -24),
             
-            plansStack.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 30),
+            benefitsView.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 16),
+            benefitsView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            
+            plansStack.topAnchor.constraint(equalTo: benefitsView.bottomAnchor, constant: 16),
             plansStack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             plansStack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
@@ -260,7 +287,7 @@ class PaywallTrialController: UIViewController {
             subscribeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             subscribeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             subscribeButton.heightAnchor.constraint(equalToConstant: 60),
-            subscribeButton.bottomAnchor.constraint(equalTo: restoreButton.topAnchor, constant: iphoneWithButton ? -5 : -20),
+            subscribeButton.bottomAnchor.constraint(equalTo: restoreButton.topAnchor, constant: -5),
             
             restoreButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             restoreButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
@@ -274,6 +301,50 @@ class PaywallTrialController: UIViewController {
     }
     
     // MARK: - Actions
+    
+    @objc
+    private func privacyTapped() {
+        if let url = URL(string: "https://www.freeprivacypolicy.com/live/5fdd7d4a-ee18-4460-a13f-cd7d06eab6a9") {
+            UIApplication.shared.open(url)
+        }
+    }
+    
+    @objc
+    private func termsTapped() {
+        if let url = URL(string: "https://www.freeprivacypolicy.com/live/3800f35a-2ef3-48e5-a7d9-f6974d7eff2a") {
+            UIApplication.shared.open(url)
+        }
+    }
+
+    private func fetchPackages() {
+        Task {
+            do {
+                let fetched = try await paywallService.offerings()
+                await MainActor.run { self.configurePackages(fetched) }
+            } catch {
+                print("[Paywall] Offerings error: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    private func configurePackages(_ fetched: [Package]) {
+        packages = Dictionary(uniqueKeysWithValues: fetched.map { ($0.identifier, $0) })
+        updatePlansUI(trialEnabled: trialSwitch.isOn)
+        selectPlan(planWeek)
+    }
+    
+    private func updatePlansUI(trialEnabled: Bool) {
+            trialLabel.text = trialEnabled ? "Free Trial Enabled" : "Free Trial Disabled"
+            planPackages.removeAll()
+
+            for (view, ids) in planMapping {
+                let targetID = (trialEnabled ? ids.trial : ids.base).rawValue
+                guard let package = packages[targetID] else { continue }
+                planPackages[view] = package
+                view.updatePrice(package.storeProduct.localizedPriceString)
+                view.updateTrialText(trialEnabled ? "3-days Free Trial" : "Get a Plan")
+            }
+        }
     
     @objc private func handleTrialSwitchChange() {
         updatePlansUI(trialEnabled: trialSwitch.isOn)
