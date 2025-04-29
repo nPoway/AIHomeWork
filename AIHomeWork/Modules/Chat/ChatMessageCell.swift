@@ -278,6 +278,8 @@ final class ChatMessageCell: UITableViewCell {
     
     func configureLoadingBubbleForAssistant() {
         messageLabel.text = ""
+        attachedImageView.image = nil
+        attachedImageView.isHidden = true
         avatarImageView.isHidden = false
         bubbleTrailingConstraint.isActive = false
         bubbleLeadingConstraint.isActive = true

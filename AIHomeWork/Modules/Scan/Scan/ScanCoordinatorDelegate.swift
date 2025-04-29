@@ -9,8 +9,11 @@ final class ScanCoordinator: Coordinator {
     
     var onImageScanned: ((UIImage) -> Void)?
     
-    init(navigationController: UINavigationController) {
+    var isFromChat: Bool
+    
+    init(navigationController: UINavigationController, fromChat: Bool = false) {
         self.navigationController = navigationController
+        self.isFromChat = fromChat
     }
     
     func start() {
@@ -38,6 +41,9 @@ final class ScanCoordinator: Coordinator {
     
     func finishWithImage(_ image: UIImage) {
         onImageScanned?(image)
+        if isFromChat {
+            navigationController.popViewController(animated: true)
+        }
     }
     
     func dismissScanningResult() {

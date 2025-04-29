@@ -319,6 +319,7 @@ extension ChatViewController {
             coordinator.presentPaywall()
         }
         else {
+            guard !isWaitingForAnimation else { return }
             triggerHapticFeedback(type: .light)
             let scanOptionsVC = ScanOptionsViewController()
             scanOptionsVC.delegate = self
@@ -345,6 +346,7 @@ extension ChatViewController: ScanOptionsDelegate {
                     
                     self.messageInputTextField.text = ""
                     self.viewModel.addAssistantLoadingMessage()
+                    self.isWaitingForAnimation = true
                 }
                 else {
                     self.showErrorAlert(message: "Failed to encode image.")
@@ -382,6 +384,7 @@ extension ChatViewController: PHPickerViewControllerDelegate {
                         
                         messageInputTextField.text = ""
                         viewModel.addAssistantLoadingMessage()
+                        self.isWaitingForAnimation = true
                         triggerHapticFeedback(type: .success)
                     }
                     else {

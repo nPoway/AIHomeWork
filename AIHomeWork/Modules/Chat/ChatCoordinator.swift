@@ -24,7 +24,7 @@ final class ChatCoordinator: Coordinator {
     }
     
     func pushCamera(completion: @escaping (UIImage) -> Void) {
-            let scanCoordinator = ScanCoordinator(navigationController: navigationController)
+            let scanCoordinator = ScanCoordinator(navigationController: navigationController, fromChat: true)
             scanCoordinator.onImageScanned = { image in
                 completion(image)
             }
