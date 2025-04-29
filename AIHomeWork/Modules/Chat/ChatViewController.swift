@@ -9,6 +9,8 @@ import PhotosUI
     private let coordinator: ChatCoordinator
     private let session: RealmChatSession?
     private var messageInputBottomConstraint: NSLayoutConstraint?
+     
+    private var isWaitingForAnimation = false
     
     private lazy var customNavigationBar: ChatNavigationView = {
         let bar = ChatNavigationView()
@@ -186,8 +188,11 @@ import PhotosUI
             coordinator.presentPaywall()
         }
         else {
+            guard !isWaitingForAnimation else { return }
             guard let text = messageInputTextField.text?.trimmingCharacters(in: .whitespaces),
                   !text.isEmpty else { return }
+            isWaitingForAnimation = true
+            self.sendButton.isEnabled = false
             viewModel.userDidSendMessage(text)
             messageInputTextField.text = ""
             messageInputTextField.resignFirstResponder()
@@ -244,6 +249,8 @@ extension ChatViewController: UITableViewDataSource {
         else {
             cell.configure(with: message, tableView: self.chatTableView, indexPath: indexPath) {
                 self.viewModel.markAnimationFinished(for: message)
+                self.sendButton.isEnabled = true
+                self.isWaitingForAnimation = false
             }
 
             let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))

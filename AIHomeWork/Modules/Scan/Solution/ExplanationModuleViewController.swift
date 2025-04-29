@@ -48,6 +48,8 @@ final class ExplanationModuleViewController: UIViewController {
         return button
     }()
     
+    private var isWaitingForAnimation = false
+    
     // MARK: - Init
     init(question: String, viewModel: ChatViewModel, coordinator: ScanCoordinator) {
         self.question = question
@@ -72,7 +74,8 @@ final class ExplanationModuleViewController: UIViewController {
         setupViews()
         setupConstraints()
         bindViewModel()
-        
+        isWaitingForAnimation = true
+        getExplanationButton.isEnabled = false
         viewModel.userDidSendMessage("\(question)")
         viewModel.saveChatSession()
         viewModel.addAssistantLoadingMessage()
@@ -154,6 +157,7 @@ final class ExplanationModuleViewController: UIViewController {
         }
         else {
             triggerHapticFeedback(type: .success)
+            guard !isWaitingForAnimation else { return }
             
             guard let previousAnswer = viewModel.messages.last(where: { $0.role == "assistant" && !$0.isLoading })?.content else {
                 return
@@ -172,7 +176,7 @@ final class ExplanationModuleViewController: UIViewController {
             self.view.layoutIfNeeded()
             
             
-            let explanationPrompt = "Please give detail explanation of your previous answer: \(previousAnswer)"
+            let explanationPrompt = "Please give detail explanation of your previous answer: \(previousAnswer). Reply in the same language the previous answer was given."
             
             viewModel.userDidSendMessage(explanationPrompt, showInChat: false)
             customNavigationBar.changeTitle("Explanation")
@@ -224,6 +228,8 @@ extension ExplanationModuleViewController: UITableViewDataSource {
         } else {
             cell.configure(with: message, tableView: self.tableView, indexPath: indexPath) {
                 self.viewModel.markAnimationFinished(for: message)
+                self.getExplanationButton.isEnabled = true
+                self.isWaitingForAnimation = false
             }
             let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
                         cell.addGestureRecognizer(longPressGesture)

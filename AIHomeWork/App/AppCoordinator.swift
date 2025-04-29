@@ -32,6 +32,7 @@ class AppCoordinator: Coordinator {
             showOnboarding()
         } else {
             pushTabBar()
+            showPaywall()
         }
     }
 
