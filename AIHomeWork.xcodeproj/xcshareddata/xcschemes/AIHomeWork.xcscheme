@@ -50,6 +50,9 @@
             ReferencedContainer = "container:AIHomeWork.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <StoreKitConfigurationFileReference
+         identifier = "../../AIHomeWork/Modules/Subscription/Test.storekit">
+      </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"

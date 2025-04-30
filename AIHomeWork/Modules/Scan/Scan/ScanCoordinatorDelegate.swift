@@ -66,7 +66,7 @@ final class ScanCoordinator: Coordinator {
         }
     }
     
-    func presentPaywall() {
+    func presentPaywall(with controller: UIViewController? = nil) {
         Purchases.shared.getOfferings { [weak self] offerings, error in
             guard let self = self else { return }
             
@@ -76,12 +76,13 @@ final class ScanCoordinator: Coordinator {
                         offering: offering,
                         displayCloseButton: false,
                         shouldBlockTouchEvents: false,
-                        dismissRequestedHandler: { [weak self] controller in
-                            self?.navigationController.dismiss(animated: true)
+                        dismissRequestedHandler: { controller in
+                           controller.dismiss(animated: true)
                         }
                     )
                     paywallVC.modalPresentationStyle = .fullScreen
-                    self.navigationController.present(paywallVC, animated: true)
+                    let cont = controller ?? self.navigationController
+                    cont.present(paywallVC, animated: true)
                 }
             }
         }
