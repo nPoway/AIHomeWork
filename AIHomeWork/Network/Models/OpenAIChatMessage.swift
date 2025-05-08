@@ -51,3 +51,7 @@ struct VisionChatMessage: Encodable {
     let role: String
     let content: [VisionMessagePart]
 }
+
+enum Role: String {
+    case system, user, assistant
+}

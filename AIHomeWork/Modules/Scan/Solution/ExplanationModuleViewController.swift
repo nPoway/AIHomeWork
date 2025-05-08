@@ -75,7 +75,6 @@ final class ExplanationModuleViewController: UIViewController {
         setupConstraints()
         bindViewModel()
         isWaitingForAnimation = true
-        print("Waiting for animation to finish...")
         getExplanationButton.isEnabled = false
         viewModel.userDidSendMessage("\(question)")
         viewModel.saveChatSession()
@@ -159,7 +158,6 @@ final class ExplanationModuleViewController: UIViewController {
         else {
             triggerHapticFeedback(type: .success)
             guard !isWaitingForAnimation else {
-                print("isWaitingForAnimation: true")
                 return
             }
             
@@ -234,7 +232,6 @@ extension ExplanationModuleViewController: UITableViewDataSource {
                 self.viewModel.markAnimationFinished(for: message)
                 self.getExplanationButton.isEnabled = true
                 self.isWaitingForAnimation = false
-                print("Animation ended succesfully")
             }
             let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
                         cell.addGestureRecognizer(longPressGesture)

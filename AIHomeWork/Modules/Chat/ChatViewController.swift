@@ -360,7 +360,6 @@ extension ChatViewController: ScanOptionsDelegate {
         var config = PHPickerConfiguration()
         config.selectionLimit = 1
         config.filter = .images
-        
         let picker = PHPickerViewController(configuration: config)
         picker.delegate = self
         present(picker, animated: true)

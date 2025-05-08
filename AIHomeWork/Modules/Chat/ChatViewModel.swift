@@ -76,13 +76,14 @@ final class ChatViewModel {
         
         onLoadingStateChanged?(true)
         
-        openAIService.sendChat(messages: filteredMessagesForAPI) { [weak self] result in
+        openAIService.sendChat(messages: filteredMessagesForAPI, subject: currentSubject) { [weak self] result in
             DispatchQueue.main.async {
                 self?.onLoadingStateChanged?(false)
                 
                 switch result {
                 case .success(let assistantReply):
-                    self?.updateAssistantLoadingMessage(with: assistantReply)
+                    let cleaned = self?.normalizeBlankLines(in: assistantReply)
+                    self?.updateAssistantLoadingMessage(with: cleaned ?? "")
                     
                 case .failure(let error as OpenAIError):
                     self?.removeAssistantLoadingMessage()
@@ -99,10 +100,19 @@ final class ChatViewModel {
         }
     }
     
+    private func normalizeBlankLines(in text: String) -> String {
+        return text.replacingOccurrences(
+            of: "\n{3,}",
+            with: "\n\n",
+            options: .regularExpression
+        )
+    }
+
+    
     func userDidSendImageAndText(imageURL: String, text: String) {
         let userMessage = OpenAIChatMessage(
             role: "user",
-            content: text,
+            content: "",
             imageURL: imageURL,
             isLoading: false
         )
@@ -115,7 +125,7 @@ final class ChatViewModel {
         
         onLoadingStateChanged?(true)
         
-        openAIService.sendChat(messages: filteredMessagesForAPI) { [weak self] result in
+        openAIService.sendChat(messages: filteredMessagesForAPI, subject: currentSubject) { [weak self] result in
             DispatchQueue.main.async {
                 self?.onLoadingStateChanged?(false)
                 
@@ -153,7 +163,6 @@ final class ChatViewModel {
         }
         else {
             let newMessage = OpenAIChatMessage(role: "assistant", content: text, isLoading: false)
-//            newMessage.needsTypingAnimation = true
             messages.append(newMessage)
             onMessagesUpdate?()
         }
@@ -207,7 +216,6 @@ final class ChatViewModel {
         do {
             let repository = RealmChatSessionRepository()
             try repository.create(session: chatSession)
-            print("Saved succesfully")
         }
         catch {
             print("Error while saving chat session: \(error)")

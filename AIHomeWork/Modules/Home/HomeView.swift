@@ -58,7 +58,6 @@ final class HomeView: BlurredGradientView {
             collectionView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -90)
         ])
         print(iphoneWithButton)
-        print("Screen size: \(screenSize.height)")
     }
     
     static func createSectionLayout(for section: Section) -> NSCollectionLayoutSection {

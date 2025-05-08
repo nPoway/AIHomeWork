@@ -257,7 +257,6 @@ class PaywallTrialController: UIViewController {
     // MARK: - Constraints
     
     private func setupConstraints() {
-        print(screenSize.height)
         NSLayoutConstraint.activate([
             backgroundImageView.topAnchor.constraint(equalTo: contentView.topAnchor),
             backgroundImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),

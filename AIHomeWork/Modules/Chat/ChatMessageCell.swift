@@ -1,8 +1,18 @@
 import UIKit
+import SwiftMath
 
 final class ChatMessageCell: UITableViewCell {
 
     // MARK: - UI Elements
+    
+    private lazy var segmentsContainer: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 4
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        return stack
+    }()
+
     
     private lazy var avatarImageView: UIImageView = {
         let imageView = UIImageView()
@@ -34,6 +44,7 @@ final class ChatMessageCell: UITableViewCell {
     private lazy var messageLabel: UILabel = {
         let label = UILabel()
         label.numberOfLines = 0
+        label.textColor = .white
         label.lineBreakMode = .byWordWrapping
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -87,6 +98,14 @@ final class ChatMessageCell: UITableViewCell {
         bubbleView.addSubview(messageLabel)
         bubbleView.addSubview(typingIndicatorView)
         contentView.addSubview(attachedImageView)
+        
+        bubbleView.addSubview(segmentsContainer)
+        NSLayoutConstraint.activate([
+            segmentsContainer.topAnchor.constraint(equalTo: bubbleView.topAnchor, constant: 8),
+            segmentsContainer.bottomAnchor.constraint(equalTo: bubbleView.bottomAnchor, constant: -8),
+            segmentsContainer.leadingAnchor.constraint(equalTo: bubbleView.leadingAnchor, constant: 12),
+            segmentsContainer.trailingAnchor.constraint(equalTo: bubbleView.trailingAnchor, constant: -12)
+        ])
     }
     
     private func setupConstraints() {
@@ -165,15 +184,21 @@ final class ChatMessageCell: UITableViewCell {
     func configure(with message: OpenAIChatMessage, tableView: UITableView,
                    indexPath: IndexPath,
                    animationDidFinish: (() -> Void)? = nil) {
+        
+        messageLabel.isHidden = false
+        messageLabel.text     = nil
+        segmentsContainer.arrangedSubviews.forEach { $0.removeFromSuperview() }
         typingIndicatorView.stopAnimating()
         typingIndicatorView.isHidden = true
         loadingBubbleMinHeight.isActive = false
-        loadingBubbleMinWidth.isActive = false
-        
-        bubbleBottomConstraintNoImage.isActive = false
+        loadingBubbleMinWidth.isActive  = false
+        attachedImageView.isHidden      = true
+        attachedImageView.image         = nil
+        bubbleBottomConstraintNoImage.isActive  = false
         bubbleBottomConstraintWithImage.isActive = false
-        attachedImageLeadingConstraint.isActive = false
+        attachedImageLeadingConstraint.isActive  = false
         attachedImageTrailingConstraint.isActive = false
+        
         
         switch message.role {
         case "assistant", "system":
@@ -181,27 +206,66 @@ final class ChatMessageCell: UITableViewCell {
             bubbleTrailingConstraint.isActive = false
             bubbleLeadingConstraint.isActive = true
             bubbleView.backgroundColor = .customPrimary
-            messageLabel.textColor = .white
-            applyCustomBubbleMask(corners: [.layerMinXMaxYCorner, .layerMaxXMaxYCorner, .layerMaxXMinYCorner])
-            attachedImageTrailingConstraint.isActive = false
-            attachedImageLeadingConstraint.isActive = true
+            applyCustomBubbleMask(corners: [.layerMinXMaxYCorner,
+                                            .layerMaxXMaxYCorner,
+                                            .layerMaxXMinYCorner])
+            
+            messageLabel.isHidden = true
+            
+            let segments = message.segments
+            
+            
             if message.isLoading {
+                print("message is loading")
                 configureLoadingBubbleForAssistant()
             }
-            else {
-                if message.needsTypingAnimation {
-                    messageLabel.text = ""
-                    typingIndicatorView.isHidden = true
-                    print("Assistant content:", message.content)
-                    DispatchQueue.main.async {
-                        self.animateTypingEffect(in: tableView, at: indexPath, text: message.content) {
-                            animationDidFinish?()
-                        }
+            else if segments.contains(where: { if case .latex = $0 { return true } else { return false } }) {
+                for segment in message.segments {
+                    switch segment {
+                    case .text(let txt):
+                        let lbl = UILabel()
+                        lbl.numberOfLines = 0
+                        lbl.font = messageLabel.font
+                        lbl.textColor = messageLabel.textColor
+                        lbl.text = txt.trimmingCharacters(in: .newlines)
+                        segmentsContainer.addArrangedSubview(lbl)
+                        
+                    case .latex(let formula, let isInline):
+                        let ml = MTMathUILabel()
+                        ml.labelMode = isInline ? .text : .display
+                        ml.fontSize  = messageLabel.font.pointSize
+                        ml.textColor = messageLabel.textColor
+                        ml.translatesAutoresizingMaskIntoConstraints = false
+                        segmentsContainer.addArrangedSubview(ml)
+                        NSLayoutConstraint.activate([
+                            ml.widthAnchor.constraint(
+                                lessThanOrEqualTo: segmentsContainer.widthAnchor
+                            )
+                        ])
+                        ml.latex = formula
                     }
                 }
-                else {
-                    messageLabel.text = message.content
+                
+                bubbleBottomConstraintNoImage.isActive = true
+                animationDidFinish?()
+                return
+            }
+            else if message.needsTypingAnimation {
+                messageLabel.isHidden = false
+                messageLabel.text = ""
+                DispatchQueue.main.async {
+                    self.animateTypingEffect(
+                        in: tableView,
+                        at: indexPath,
+                        text: message.content
+                    ) {
+                        animationDidFinish?()
+                    }
                 }
+            }
+            else {
+                messageLabel.isHidden = false
+                messageLabel.text = message.content
             }
             
         case "user":
@@ -277,6 +341,7 @@ final class ChatMessageCell: UITableViewCell {
 
     
     func configureLoadingBubbleForAssistant() {
+        segmentsContainer.arrangedSubviews.forEach { $0.removeFromSuperview() }
         messageLabel.text = ""
         attachedImageView.image = nil
         attachedImageView.isHidden = true

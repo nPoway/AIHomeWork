@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		171ED3C22DCBADFD00313404 /* SwiftMath in Frameworks */ = {isa = PBXBuildFile; productRef = 171ED3C12DCBADFD00313404 /* SwiftMath */; };
 		17358AC02D5E5D6900131E26 /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 17358ABF2D5E5D6900131E26 /* RealmSwift */; };
 		17358ACC2D5E609B00131E26 /* RealmSwift in Embed Frameworks */ = {isa = PBXBuildFile; productRef = 17358ABF2D5E5D6900131E26 /* RealmSwift */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		1774BE002DBBEA6200D1D389 /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 1774BDFF2DBBEA6200D1D389 /* RevenueCat */; };
@@ -69,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				171ED3C22DCBADFD00313404 /* SwiftMath in Frameworks */,
 				1774BE002DBBEA6200D1D389 /* RevenueCat in Frameworks */,
 				17358AC02D5E5D6900131E26 /* RealmSwift in Frameworks */,
 				1774BE022DBBEA6200D1D389 /* RevenueCatUI in Frameworks */,
@@ -118,6 +120,7 @@
 				17358ABF2D5E5D6900131E26 /* RealmSwift */,
 				1774BDFF2DBBEA6200D1D389 /* RevenueCat */,
 				1774BE012DBBEA6200D1D389 /* RevenueCatUI */,
+				171ED3C12DCBADFD00313404 /* SwiftMath */,
 			);
 			productName = "MVVM+C";
 			productReference = 17830B782D4D1E1200EAB2F6 /* AIHomeWork.app */;
@@ -150,6 +153,7 @@
 			packageReferences = (
 				17358ABC2D5E5D6900131E26 /* XCRemoteSwiftPackageReference "realm-swift" */,
 				1774BDFE2DBBEA6200D1D389 /* XCRemoteSwiftPackageReference "purchases-ios" */,
+				171ED3C02DCBADFD00313404 /* XCRemoteSwiftPackageReference "SwiftMath" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 17830B792D4D1E1200EAB2F6 /* Products */;
@@ -395,6 +399,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		171ED3C02DCBADFD00313404 /* XCRemoteSwiftPackageReference "SwiftMath" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mgriebling/SwiftMath.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.7.1;
+			};
+		};
 		17358ABC2D5E5D6900131E26 /* XCRemoteSwiftPackageReference "realm-swift" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/realm/realm-swift";
@@ -414,6 +426,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		171ED3C12DCBADFD00313404 /* SwiftMath */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 171ED3C02DCBADFD00313404 /* XCRemoteSwiftPackageReference "SwiftMath" */;
+			productName = SwiftMath;
+		};
 		17358ABF2D5E5D6900131E26 /* RealmSwift */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 17358ABC2D5E5D6900131E26 /* XCRemoteSwiftPackageReference "realm-swift" */;

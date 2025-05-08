@@ -38,9 +38,7 @@ class OnboardingCoordinator: Coordinator {
         step.onContinue = { [weak self] in
             guard let self = self else { return }
             let step2 = self.makeStep2()
-            print("Before push:", self.navigationController.viewControllers)
             self.navigationController.pushViewController(step2, animated: true)
-            print("After push:", self.navigationController.viewControllers)
 
             
         }

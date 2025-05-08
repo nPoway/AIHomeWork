@@ -1,74 +1,50 @@
 import UIKit
-import Vision
-
-// MARK: - TextRecognitionService
 
 final class TextRecognitionService {
-    
+
+    private let openAI = OpenAIService()
+    private let ocrSystemPrompt = """
+    You are an OCR assistant. Transcribe *exactly* the visible text from the image.
+    Preserve math notation; do not add commentary or solve anything.
+    """
+
     @discardableResult
-    func recognizeText(
-        in image: UIImage,
-        languages: [String] = [
-        "en-US", "ru-RU", "es-ES", "fr-FR", "de-DE", "zh-CN", "ja-JP", "ko-KR",
-        "it-IT", "pt-BR", "ar-SA", "hi-IN", "nl-NL", "tr-TR", "sv-SE"
-    ]
-    ) async throws -> String {
-        
-        guard let cgImage = image.cgImage else {
+    func recognizeText(in image: UIImage) async throws -> String {
+        return try await gptOCR(image)
+    }
+
+    private func gptOCR(_ image: UIImage) async throws -> String {
+        guard let jpegData = image.jpegData(compressionQuality: 0.8) else {
             throw TextRecognitionError.invalidImage
         }
-        return try await withCheckedThrowingContinuation { continuation in
-            let requestHandler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-            
-            let request = VNRecognizeTextRequest { request, error in
-                if let error = error {
-                    continuation.resume(throwing: error)
-                    return
-                }
-                guard let observations = request.results as? [VNRecognizedTextObservation],
-                      !observations.isEmpty else {
-                    continuation.resume(throwing: TextRecognitionError.noTextFound)
-                    return
-                }
-                let sortedObservations = observations.sorted {
-                    $0.boundingBox.minY > $1.boundingBox.minY
-                }
-                
-                var formattedText = ""
-                var previousMaxY: CGFloat = 1.0
-                
-                for observation in sortedObservations {
-                    guard let topCandidate = observation.topCandidates(1).first else { continue }
-                    let verticalSpacing = previousMaxY - observation.boundingBox.maxY
-                    if verticalSpacing > 0.05 {
-                        let numberOfNewLines = Int(verticalSpacing / 0.05)
-                        formattedText += String(repeating: "\n\n", count: numberOfNewLines)
-                    }
-                    
-                    let indentationCount = Int(observation.boundingBox.minX * 20)
-                    let indentation = String(repeating: " ", count: max(0, indentationCount))
-                    formattedText += indentation + topCandidate.string
-                    
-                    previousMaxY = observation.boundingBox.minY
-                }
-                
-                continuation.resume(returning: formattedText)
-            }
-            
-            request.recognitionLanguages = languages
-            request.usesLanguageCorrection = true
-            request.recognitionLevel = .accurate
-           
-            DispatchQueue.global(qos: .userInitiated).async {
-                do {
-                    try requestHandler.perform([request])
-                } catch {
-                    continuation.resume(throwing: error)
+        let base64 = jpegData.base64EncodedString()
+
+        let payload: [String: Any] = [
+            "model": "gpt-4o",
+            "temperature": 0,
+            "max_tokens": 256,
+            "messages": [
+                ["role": "system", "content": ocrSystemPrompt],
+                ["role": "user",
+                 "content": [
+                    ["type": "image_url",
+                     "image_url": ["url": "data:image/jpeg;base64,\(base64)",
+                                   "detail": "high"]]
+                 ]]
+            ]
+        ]
+
+        return try await withCheckedThrowingContinuation { cont in
+            openAI.performRawJSON(payload) { result in
+                switch result {
+                case .success(let text): cont.resume(returning: text)
+                case .failure(let err):  cont.resume(throwing: err)
                 }
             }
         }
     }
 }
+
 
 // MARK: - TextRecognitionError
 
