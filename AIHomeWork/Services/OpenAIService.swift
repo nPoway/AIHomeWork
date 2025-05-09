@@ -182,7 +182,7 @@ final class OpenAIService: OpenAIServiceProtocol {
         guard shouldUseVision(for: body.messages) else {
             let json: [String: Any] = [
                 "model": body.model,
-                "messages": body.messages.map { ["role": $0.role, "content": $0.content] },
+                "messages": payloadMessages(from: body.messages),
                 "max_tokens": body.maxTokens,
                 "temperature": body.temperature
             ]
@@ -190,37 +190,63 @@ final class OpenAIService: OpenAIServiceProtocol {
             performOpenAIRequest(json, completion: completion)
             return
         }
-
-        guard let imgURL = body.messages.first(where: { $0.imageURL != nil })?.imageURL else {
-            completion(.failure(OpenAIError.requestFailed("Image URL not found."))); return
+        guard let idx = body.messages.firstIndex(where: {
+                ($0.imageURL ?? "").isEmpty == false && $0.ocrText == nil
+            }),
+        let imgURL = body.messages[idx].imageURL
+                
+        else {
+            completion(.failure(OpenAIError.requestFailed("Image URL not found or already processed.")))
+            return
         }
 
         let ocrPayload = buildVisionOCRPayload(imageURL: imgURL)
-
+        
+        
         performOpenAIRequest(ocrPayload) { [weak self] ocrResult in
             switch ocrResult {
             case .failure(let err):
+                print(err)
                 completion(.failure(err))
-
+                
             case .success(let problemText):
                 guard let self else { return }
-
-                let textMessages = [
-                    OpenAIChatMessage(role: "system",
-                                      content: subject),
-                    OpenAIChatMessage(role: "user", content: problemText)
-                ]
-                let solveJSON: [String: Any] = [
-                    "model": "gpt-4o",
-                    "messages": textMessages.map { ["role": $0.role, "content": $0.content] },
-                    "max_tokens": 1024,
-                    "temperature": 0.2
-                ]
-                self.performOpenAIRequest(solveJSON, completion: completion)
+                
+                var newMsgs = body.messages
+                newMsgs[idx].ocrText  = problemText
+                newMsgs[idx].content  = problemText
+                
+                let nextBody = OpenAIChatRequest(
+                    model: body.model,
+                    messages: newMsgs,
+                    temperature: body.temperature,
+                    maxTokens: body.maxTokens
+                )
+                self.sendChatRequest(nextBody,subject: subject, completion: completion)
             }
         }
     }
     
+    private func payloadMessages(from msgs: [OpenAIChatMessage]) -> [[String: Any]] {
+        msgs.map { msg in
+            if let txt = msg.ocrText, !txt.isEmpty {
+                return ["role": msg.role, "content": txt]
+            }
+            if let url = msg.imageURL, !url.isEmpty {
+                return ["role": msg.role,
+                        "content": [["type": "image_url",
+                                     "image_url": ["url": url, "detail": "high"]]]]
+            }
+            return ["role": msg.role, "content": msg.content]
+        }
+    }
+
+    
+    struct OpenAIErrorResponse: Decodable {
+        struct Err: Decodable { let message: String }
+        let error: Err
+    }
+
     private func performOpenAIRequest(
         _ payload: [String: Any],
         completion: @escaping (Result<String, Error>) -> Void
@@ -228,6 +254,7 @@ final class OpenAIService: OpenAIServiceProtocol {
         guard let url = URL(string: OpenAIEndpoint.chatCompletions) else {
             completion(.failure(OpenAIError.invalidURL)); return
         }
+
         var req = URLRequest(url: url)
         req.httpMethod = "POST"
         req.addValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -237,25 +264,33 @@ final class OpenAIService: OpenAIServiceProtocol {
         catch { completion(.failure(error)); return }
 
         session.dataTask(with: req) { data, _, err in
-            if let err = err { completion(.failure(err)); return }
+            if let err { completion(.failure(err)); return }
             guard let data else { completion(.failure(OpenAIError.noData)); return }
 
-            do {
-                let resp = try JSONDecoder().decode(OpenAIChatResponse.self, from: data)
-                if let first = resp.choices.first?.message.content {
-                    completion(.success(first))
-                } else {
-                    completion(.failure(OpenAIError.emptyResponse))
-                }
-            } catch { completion(.failure(OpenAIError.decodingFailed)) }
+            if let chat = try? JSONDecoder().decode(OpenAIChatResponse.self, from: data),
+               let first = chat.choices.first?.message.content {
+                completion(.success(first)); return
+            }
+
+            if let apiErr = try? JSONDecoder().decode(OpenAIErrorResponse.self, from: data) {
+                completion(.failure(OpenAIError.requestFailed(apiErr.error.message))); return
+            }
+
+            if let raw = String(data: data, encoding: .utf8) {
+                print("🔴 Unknown response:", raw)
+            }
+
+            completion(.failure(OpenAIError.decodingFailed))
         }.resume()
     }
+
+
 
     private func buildVisionOCRPayload(imageURL: String) -> [String: Any] {
         [
             "model": "gpt-4o",
             "temperature": 0,
-            "max_tokens": 256,
+            "max_tokens": 512,
             "messages": [
                 [
                     "role": "system",
@@ -381,7 +416,7 @@ extension OpenAIService {
     }
     
     private func shouldUseVision(for messages: [OpenAIChatMessage]) -> Bool {
-        return messages.contains { $0.imageURL != nil }
+        messages.contains { ($0.imageURL ?? "").isEmpty == false && $0.ocrText == nil }
     }
     
     func makeSystemPrompt(for subject: Subject) -> String {
@@ -480,8 +515,7 @@ extension OpenAIService {
 }
 
 extension OpenAIService {
-
-    /// Отправляет готовый JSON‑словарь; возвращает `content` первого choice.
+    
     func performRawJSON(
         _ payload: [String: Any],
         completion: @escaping (Result<String, Error>) -> Void

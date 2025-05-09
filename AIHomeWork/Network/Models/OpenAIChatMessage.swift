@@ -11,6 +11,10 @@ struct OpenAIChatMessage: Codable, Equatable {
     
     var isHidden: Bool = false
     
+    var ocrProcessed: Bool = false
+    
+    var ocrText: String? = nil 
+    
     var needsTypingAnimation: Bool = false
     
     private enum CodingKeys: String, CodingKey {
