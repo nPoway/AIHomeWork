@@ -57,7 +57,9 @@ class OnboardingCoordinator: Coordinator {
         step.onContinue = { [weak self] in
             guard let self = self else { return }
             let step3 = self.makeStep3()
-            self.showRatePopup()
+            DispatchQueue.main.async {
+                self.showRatePopup()
+            }
             self.navigationController.pushViewController(step3, animated: true)
         }
         

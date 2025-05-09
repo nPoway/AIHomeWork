@@ -22,7 +22,18 @@ final class HomeViewController: BaseViewController {
         self.view = homeView
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if PaywallService.shared.isPremium {
+            homeView.navigationBar.proButton.isHidden = true
+        }
+        else {
+            homeView.navigationBar.proButton.isHidden = false
+        }
+    }
+    
     override func setupUI() {
+    
         view.backgroundColor = .primaryExtraDark
         setupTargets()
         setupDataSource()
